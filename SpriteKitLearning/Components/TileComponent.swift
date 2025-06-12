@@ -11,12 +11,12 @@ class TileComponent: GKComponent {
         if isWall {
             let pbody = SKPhysicsBody(rectangleOf: size)
             self.node.fillColor = .gray
-            pbody.collisionBitMask = allBitMask
-            pbody.contactTestBitMask = allBitMask
+            pbody.collisionBitMask = PhysicsCategory.all.rawValue
+            pbody.contactTestBitMask = PhysicsCategory.all.rawValue
             pbody.affectedByGravity = false
             pbody.allowsRotation = false
             pbody.isDynamic = false
-            pbody.categoryBitMask = floorBitMask
+            pbody.categoryBitMask = PhysicsCategory.wall.rawValue
             self.node.physicsBody = pbody
         } else {
             self.node.fillColor = .red
