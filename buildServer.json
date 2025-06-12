@@ -1,0 +1,19 @@
+{
+	"name": "xcode build server",
+	"version": "0.2",
+	"bspVersion": "2.0",
+	"languages": [
+		"c",
+		"cpp",
+		"objective-c",
+		"objective-cpp",
+		"swift"
+	],
+	"argv": [
+		"/opt/homebrew/bin/xcode-build-server"
+	],
+	"workspace": "/Users/shawnandrew/Documents/Work/ADA/C3/SpirteKitLearning/SpriteKitLearning/SpriteKitLearning.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/shawnandrew/Library/Developer/Xcode/DerivedData/SpriteKitLearning-akivgabkctpxnocilbrsdwfobxoy",
+	"scheme": "SpriteKitLearning",
+	"kind": "xcode"
+}
