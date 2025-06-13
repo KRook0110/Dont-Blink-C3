@@ -21,13 +21,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var mazeMapEntity: GKEntity!
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
+    
+    private var lastBlinkCheckTime: TimeInterval = 0
+    private let blinkInterval: TimeInterval = 0.2
 
     private var mousePosition: CGPoint? = nil
     private var allowMove = true
     private var mouseIsPressed = false
+    
+    var detector: EyeBlinkDetector
 
     private var lastUpdateTime: TimeInterval = 0
 
+    init(size: CGSize, detector: EyeBlinkDetector) {
+        self.detector = detector
+        super.init(size: size)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    
     override func sceneDidLoad() {
 
         self.lastUpdateTime = 0
@@ -152,7 +167,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
         print(keysPressed)
-        if event.keyCode == 0x31 {
+        if event.keyCode == 0x31 { // Space
+            randomTeleportNearPlayer()
+        }
+    }
+    
+    func handleBlink() {
+        if detector.isLeftBlink && detector.isRightBlink {
             randomTeleportNearPlayer()
         }
     }
@@ -181,6 +202,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // move to mouse direction
         self.playerComponent.moveDirection(pos: mousePosition)
+        
+        if currentTime - self.lastBlinkCheckTime >= self.blinkInterval {
+            self.handleBlink()
+            self.lastBlinkCheckTime = currentTime
+        }
 
         // Update entities
         for entity in self.entities {
