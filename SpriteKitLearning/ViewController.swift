@@ -16,14 +16,17 @@ class ViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let scene = GameScene(size: skView.bounds.size, detector: detector)
-        scene.scaleMode = .aspectFill
-
-        skView.presentScene(scene)
+     
+        let menuScene = MenuScene(size: skView.bounds.size)
+        menuScene.scaleMode = .aspectFill
+        menuScene.detector = detector
+        
+        skView.presentScene(menuScene)
         skView.ignoresSiblingOrder = true
         skView.showsFPS = true
         skView.showsNodeCount = true
+
+
     }
 }
 
