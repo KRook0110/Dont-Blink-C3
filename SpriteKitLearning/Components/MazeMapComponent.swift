@@ -18,6 +18,7 @@ class MazeMapComponent: GKComponent {
     private var entityGrid: [[TileComponent]] = []
 
     init(pos: CGPoint, maze: [[Bool]]) {
+
         self.maze = maze
 
         totalHeight = tileHeight * CGFloat(maze.count)

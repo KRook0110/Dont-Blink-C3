@@ -8,9 +8,6 @@
 import GameplayKit
 import SpriteKit
 
-
-
-
 class GameScene: SKScene, SKPhysicsContactDelegate {
     private let playerSizes = CGSize(width: 60, height: 60)
 
@@ -25,12 +22,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
 
-    private var lastUpdateTime: TimeInterval = 0
-    private var label: SKLabelNode?
-    private var spinnyNode: SKShapeNode?
     private var mousePosition: CGPoint? = nil
     private var allowMove = true
     private var mouseIsPressed = false
+
+    private var lastUpdateTime: TimeInterval = 0
 
     override func sceneDidLoad() {
 
@@ -76,7 +72,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func randomTeleportNearPlayer() {
-        let offsets = [(0, 1), (1, 0), (-1, 0), (0, -1), (1,1)]
+        let offsets = [(0, 1), (1, 0), (-1, 0), (0, -1)]
         let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
         print("i: \(i), j: \(j)")
 
@@ -105,9 +101,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     func didBegin(_ contact: SKPhysicsContact) {
         print("Collision Happend")
-        if contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
-            || contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
-        {
+
+        let playerAndWallCollided =
+            (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
+                && contact.bodyB.categoryBitMask == PhysicsCategory.wall.rawValue)
+            || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
+                && contact.bodyA.categoryBitMask == PhysicsCategory.wall.rawValue)
+        let playerAndEnemyCollided =
+            (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
+                && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
+            || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
+                && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
+
+
+        if  playerAndWallCollided {
             setMousePosition(atPoint: nil)
             allowMove = false
             Task {
@@ -116,6 +123,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 print("allowMove true")
             }
         }
+        if playerAndEnemyCollided {
+            print("You died")
+        }
+
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -162,31 +173,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let dt = currentTime - self.lastUpdateTime
 
         // move camera position to player position
-
         if let player = playerComponent?.node {
             cameraNode.position = player.position
         }
 
-        // handle wasd input
-        if !mouseIsPressed {
-            var directionx = self.playerComponent.node.position.x
-            var directiony = self.playerComponent.node.position.y
-
-            if keysPressed.contains(0x00) {  // A
-                directionx = self.playerComponent.node.position.x - 1000
-            }
-            if keysPressed.contains(0x02) {  // D
-                directionx = self.playerComponent.node.position.x + 1000
-            }
-            if keysPressed.contains(0x0D) {  // W
-                directiony = self.playerComponent.node.position.y + 1000
-            }
-            if keysPressed.contains(0x01) {  // S
-                directiony = self.playerComponent.node.position.y - 1000
-            }
-
-            self.setMousePosition(atPoint: CGPoint(x: directionx, y: directiony))
-        }
+        handleKeyboardMovement()
 
         // move to mouse direction
         self.playerComponent.moveDirection(pos: mousePosition)
@@ -197,5 +188,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         self.lastUpdateTime = currentTime
+    }
+
+    func handleKeyboardMovement() {
+        guard !mouseIsPressed else { return }
+
+        let position = playerComponent.node.position
+        var dx = position.x
+        var dy = position.y
+
+        if keysPressed.contains(0x00) { dx -= 1000 }  // A
+        if keysPressed.contains(0x02) { dx += 1000 }  // D
+        if keysPressed.contains(0x0D) { dy += 1000 }  // W
+        if keysPressed.contains(0x01) { dy -= 1000 }  // S
+
+        setMousePosition(atPoint: CGPoint(x: dx, y: dy))
     }
 }
