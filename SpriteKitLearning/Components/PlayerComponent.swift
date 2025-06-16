@@ -45,24 +45,15 @@ class PlayerComponent: GKComponent {
         body.velocity = CGVector(dx: dx, dy: dy)
     }
 
-    func moveDirection(pos: CGPoint?) {
-        guard let pos else { return }
+    func moveDirection(x: Int, y: Int) {
         guard let body = self.node.physicsBody else { return }
-        let dx = pos.x - self.node.position.x
-        let dy = pos.y - self.node.position.y
-        let total = abs(dx) + abs(dy)
-
-        if total < 5 {
-            body.velocity.dx = 0
-            body.velocity.dy = 0
-            // self.node.position = pos
-        } else {
-            body.velocity.dx = dx / total * maxSpeed
-            body.velocity.dy = dy / total * maxSpeed
+        var dx = CGFloat(x) * maxSpeed
+        var dy = CGFloat (y) * maxSpeed
+        if x != 0 && y != 0 {
+            dx /= sqrt2
+            dy /= sqrt2
         }
-
-        // body.velocity.dx = (dx * dx) / maxboth * maxSpeed * 2
-        // body.velocity.dy = (dy * dy) / maxboth * maxSpeed * 2
-
+        body.velocity.dx = dx
+        body.velocity.dy = dy
     }
 }

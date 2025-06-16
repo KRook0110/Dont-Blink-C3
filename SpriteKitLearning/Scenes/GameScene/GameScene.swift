@@ -16,19 +16,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var playerEntity: GKEntity?
     private var playerComponent: PlayerComponent!
     // private var floorComponent: FloorComponent!
-    private var cameraNode: SKCameraNode!
-    private var mazeMap: MazeMapComponent!
-    private var mazeMapEntity: GKEntity!
+    private var cameraNode: SKCameraNode?
+    private var mazeMap: MazeMapComponent?
+    private var mazeMapEntity: GKEntity?
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
-    
+
     private var lastBlinkCheckTime: TimeInterval = 0
+    private var lastBlinkTime: TimeInterval = 0
     private let blinkInterval: TimeInterval = 0.2
 
-    private var mousePosition: CGPoint? = nil
+    private var didBlink: Bool = false
+    private let blinkCooldown: TimeInterval = 0.5
+    private var currentTime: TimeInterval = 0
+
     private var allowMove = true
-    private var mouseIsPressed = false
-    
+
     var detector: EyeBlinkDetector
 
     private var lastUpdateTime: TimeInterval = 0
@@ -42,7 +45,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         fatalError("init(coder:) has not been implemented")
     }
 
-    
     override func sceneDidLoad() {
 
         self.lastUpdateTime = 0
@@ -51,11 +53,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // Camera
         cameraNode = SKCameraNode()
+        guard let cameraNode else { return }
         self.camera = cameraNode
         self.addChild(cameraNode)
 
         // Maze
         mazeMap = MazeGenerator.generateMaze(pos: CGPoint(x: 0, y: 0))
+        guard let mazeMap else { return }
         self.addChild(mazeMap.node)
         mazeMapEntity = GKEntity()
         mazeMapEntity?.addComponent(mazeMap)
@@ -87,6 +91,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func randomTeleportNearPlayer() {
+        guard let mazeMap else { return }
         let offsets = [(0, 1), (1, 0), (-1, 0), (0, -1)]
         let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
         print("i: \(i), j: \(j)")
@@ -107,12 +112,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         teleportEnemy(position)
     }
 
-    func setMousePosition(atPoint pos: CGPoint?) {
-        if allowMove {
-            // print(pos)
-            mousePosition = pos
-        }
-    }
+    // func setMousePosition(atPoint pos: CGPoint?) {
+    //     if allowMove {
+    //         // print(pos)
+    //         mousePosition = pos
+    //     }
+    // }
 
     func didBegin(_ contact: SKPhysicsContact) {
         print("Collision Happend")
@@ -128,9 +133,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
                 && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
 
-
-        if  playerAndWallCollided {
-            setMousePosition(atPoint: nil)
+        if playerAndWallCollided {
             allowMove = false
             Task {
                 try await Task.sleep(nanoseconds: 1000 * 1000 * 200)
@@ -144,19 +147,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     }
 
-    override func mouseDown(with event: NSEvent) {
-        mouseIsPressed = true
-        self.setMousePosition(atPoint: event.location(in: self))
-    }
-
-    override func mouseDragged(with event: NSEvent) {
-        self.setMousePosition(atPoint: event.location(in: self))
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        mouseIsPressed = false
-        self.setMousePosition(atPoint: nil)
-    }
+    // override func mouseDown(with event: NSEvent) {
+    //     mouseIsPressed = true
+    //     self.setMousePosition(atPoint: event.location(in: self))
+    // }
+    //
+    // override func mouseDragged(with event: NSEvent) {
+    //     self.setMousePosition(atPoint: event.location(in: self))
+    // }
+    //
+    // override func mouseUp(with event: NSEvent) {
+    //     mouseIsPressed = false
+    //     self.setMousePosition(atPoint: nil)
+    // }
 
     // override func mouseMoved(with event: NSEvent) {
     //     setMousePosition(atPoint: event.location(in: self))
@@ -167,15 +170,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
         print(keysPressed)
-        if event.keyCode == 0x31 { // Space
+        if event.keyCode == 0x31 {  // Space
             randomTeleportNearPlayer()
         }
     }
-    
+
+
     func handleBlink() {
-        if detector.isLeftBlink && detector.isRightBlink {
-            randomTeleportNearPlayer()
+        if !detector.isLeftBlink && !detector.isRightBlink {
+            return
         }
+        if self.currentTime - self.lastBlinkTime < self.blinkCooldown {
+            return
+        }
+        self.lastBlinkTime = self.currentTime
+
+
+        if let enemyComponent {
+            let player_pos = self.playerComponent.node.position
+            let enemy_pos = enemyComponent.node.position
+            let dx = player_pos.x - enemy_pos.x
+            let dy = player_pos.y - enemy_pos.y
+            let distance = CGFloat(dx * dx + dy * dy)
+
+            if distance <= enemyComponent.killDistance * enemyComponent.killDistance
+            {
+                print("You Died")
+                return
+            }
+        }
+
+        randomTeleportNearPlayer()
+
     }
 
     override func keyUp(with event: NSEvent) {
@@ -183,6 +209,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     override func update(_ currentTime: TimeInterval) {
+        self.currentTime = currentTime
         // Called before each frame is rendered
 
         // Initialize _lastUpdateTime if it has not already been
@@ -193,16 +220,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Calculate time since last update
         let dt = currentTime - self.lastUpdateTime
 
-        // move camera position to player position
-        if let player = playerComponent?.node {
-            cameraNode.position = player.position
+        if let cameraNode {
+            // move camera position to player position
+            if let player = playerComponent?.node {
+                cameraNode.position = player.position
+            }
         }
 
         handleKeyboardMovement()
 
-        // move to mouse direction
-        self.playerComponent.moveDirection(pos: mousePosition)
-        
         if currentTime - self.lastBlinkCheckTime >= self.blinkInterval {
             self.handleBlink()
             self.lastBlinkCheckTime = currentTime
@@ -217,17 +243,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func handleKeyboardMovement() {
-        guard !mouseIsPressed else { return }
+        var dx = 0
+        var dy = 0
 
-        let position = playerComponent.node.position
-        var dx = position.x
-        var dy = position.y
+        if keysPressed.contains(0x00) { dx -= 1 }  // A
+        if keysPressed.contains(0x02) { dx += 1 }  // D
+        if keysPressed.contains(0x0D) { dy += 1 }  // W
+        if keysPressed.contains(0x01) { dy -= 1 }  // S
 
-        if keysPressed.contains(0x00) { dx -= 1000 }  // A
-        if keysPressed.contains(0x02) { dx += 1000 }  // D
-        if keysPressed.contains(0x0D) { dy += 1000 }  // W
-        if keysPressed.contains(0x01) { dy -= 1000 }  // S
-
-        setMousePosition(atPoint: CGPoint(x: dx, y: dy))
+        playerComponent.moveDirection(x: dx, y: dy)
     }
 }

@@ -3,12 +3,26 @@ import SpriteKit
 
 class EnemyCircle: GKComponent {
     let node: SKShapeNode
+    let killDistance = CGFloat(500)
+
+    private func makeKillRadius() -> SKShapeNode {
+        let node = SKShapeNode(ellipseOf: CGSize(
+            width: killDistance, height: killDistance
+        ))
+        node.lineWidth = 2
+        node.fillColor = .clear
+        node.strokeColor = .white
+        node.position = CGPoint(x: 0, y:0)
+
+        return node
+    }
 
     init(size: CGSize, pos: CGPoint) {
         self.node = SKShapeNode(ellipseOf: size)
         self.node.fillColor = .yellow
         self.node.lineWidth = 2
         self.node.position = pos
+
 
         let pbody = SKPhysicsBody(rectangleOf: size)
         pbody.collisionBitMask = PhysicsCategory.all.rawValue
@@ -19,6 +33,8 @@ class EnemyCircle: GKComponent {
         pbody.categoryBitMask = PhysicsCategory.wall.rawValue
         self.node.physicsBody = pbody
         super.init()
+
+        self.node.addChild(makeKillRadius())
     }
 
     required init?(coder: NSCoder) {

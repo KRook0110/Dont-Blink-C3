@@ -7,7 +7,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     private let session = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()
     private let sequenceHandler = VNSequenceRequestHandler()
-    
+
     @Published var leftEAR: CGFloat = 1.0
     @Published var rightEAR: CGFloat = 1.0
     @Published var isLeftBlink: Bool = false
@@ -16,12 +16,12 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     @Published var leftEyePoints: [CGPoint] = []
     @Published var rightEyePoints: [CGPoint] = []
     @Published var faceBoundingBox: CGRect = .zero
-    
+
     override init() {
         super.init()
         setupCamera()
     }
-    
+
     private func setupCamera() {
         session.sessionPreset = .medium
         guard let device = AVCaptureDevice.default(for: .video),
@@ -31,7 +31,9 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         session.addOutput(videoOutput)
         session.startRunning()
     }
-    
+    private func turnOffCamera() {
+    }
+
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let request = VNDetectFaceLandmarksRequest { [weak self] request, error in
@@ -40,7 +42,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         }
         try? sequenceHandler.perform([request], on: pixelBuffer)
     }
-    
+
     private func processFace(_ face: VNFaceObservation) {
         let boundingBox = face.boundingBox
         var allLandmarks: [CGPoint] = []
@@ -72,14 +74,14 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
             self.faceBoundingBox = boundingBox
         }
     }
-    
+
     private func convert(_ point: CGPoint, boundingBox: CGRect) -> CGPoint {
         // Convert from face bounding box to image coordinates (normalized 0-1)
         let x = boundingBox.origin.x + point.x * boundingBox.size.width
         let y = boundingBox.origin.y + point.y * boundingBox.size.height
         return CGPoint(x: x, y: y)
     }
-    
+
     private func calculateEAR(points: [CGPoint]) -> CGFloat {
         guard points.count >= 6 else { return 1.0 }
         func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
@@ -90,8 +92,8 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         let horizontal = distance(points[0], points[3])
         return (vertical1 + vertical2) / (2.0 * horizontal)
     }
-    
+
     func getSession() -> AVCaptureSession {
         return session
     }
-} 
+}
