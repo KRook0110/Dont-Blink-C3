@@ -7,7 +7,7 @@ class EnemyCircle: GKComponent {
 
     private func makeKillRadius() -> SKShapeNode {
         let node = SKShapeNode(ellipseOf: CGSize(
-            width: killDistance, height: killDistance
+            width: killDistance * 2, height: killDistance * 2
         ))
         node.lineWidth = 2
         node.fillColor = .clear
@@ -30,7 +30,7 @@ class EnemyCircle: GKComponent {
         pbody.affectedByGravity = false
         pbody.allowsRotation = false
         pbody.isDynamic = false
-        pbody.categoryBitMask = PhysicsCategory.wall.rawValue
+        pbody.categoryBitMask = PhysicsCategory.enemy.rawValue
         self.node.physicsBody = pbody
         super.init()
 

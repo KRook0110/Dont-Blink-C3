@@ -3,7 +3,7 @@ import GameplayKit
 
 class PlayerComponent: GKComponent {
     let node: SKShapeNode
-    let moveAcceleration = CGFloat(100)
+    let moveAcceleration = CGFloat(200)
     let maxSpeed: CGFloat = 300.0
 
     init(size: CGSize, pos: CGPoint) {
@@ -18,9 +18,9 @@ class PlayerComponent: GKComponent {
         pBody.categoryBitMask = PhysicsCategory.player.rawValue
         pBody.collisionBitMask = PhysicsCategory.all.rawValue
         pBody.contactTestBitMask = PhysicsCategory.all.rawValue
-        pBody.friction = 0.5
-        pBody.restitution = 0.5
-        pBody.linearDamping = 0.5
+        // pBody.friction = 0.5
+        pBody.restitution = 0.1
+        pBody.linearDamping = 3
         self.node.physicsBody = pBody
 
         super.init()
@@ -47,13 +47,15 @@ class PlayerComponent: GKComponent {
 
     func moveDirection(x: Int, y: Int) {
         guard let body = self.node.physicsBody else { return }
-        var dx = CGFloat(x) * maxSpeed
-        var dy = CGFloat (y) * maxSpeed
+        let fx = CGFloat(x) * moveAcceleration
+        let fy = CGFloat (y) * moveAcceleration
+        var force = CGVector(dx: fx, dy: fy)
         if x != 0 && y != 0 {
-            dx /= sqrt2
-            dy /= sqrt2
+            force.dx /= sqrt2
+            force.dy /= sqrt2
         }
-        body.velocity.dx = dx
-        body.velocity.dy = dy
+        body.applyForce(force)
+        // body.velocity.dx = dx
+        // body.velocity.dy = dy
     }
 }

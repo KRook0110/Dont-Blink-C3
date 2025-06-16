@@ -21,6 +21,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var mazeMapEntity: GKEntity?
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
+    private var vigenette: SKSpriteNode?
 
     private var lastBlinkCheckTime: TimeInterval = 0
     private var lastBlinkTime: TimeInterval = 0
@@ -32,8 +33,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private var allowMove = true
 
-    var detector: EyeBlinkDetector
-
+    private var detector: EyeBlinkDetector
     private var lastUpdateTime: TimeInterval = 0
 
     init(size: CGSize, detector: EyeBlinkDetector) {
@@ -41,50 +41,62 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         super.init(size: size)
     }
 
-    required init?(coder aDecoder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func sceneDidLoad() {
+        lastUpdateTime = 0
 
-        self.lastUpdateTime = 0
-
-        self.physicsWorld.contactDelegate = self
+        physicsWorld.contactDelegate = self
 
         // Camera
         cameraNode = SKCameraNode()
         guard let cameraNode else { return }
-        self.camera = cameraNode
-        self.addChild(cameraNode)
+        camera = cameraNode
+        cameraNode.setScale(CGFloat(2.0))
+        addChild(cameraNode)
 
         // Maze
         mazeMap = MazeGenerator.generateMaze(pos: CGPoint(x: 0, y: 0))
         guard let mazeMap else { return }
-        self.addChild(mazeMap.node)
+        addChild(mazeMap.node)
         mazeMapEntity = GKEntity()
         mazeMapEntity?.addComponent(mazeMap)
         if let mazeMapEntity {
-            self.entities.append(mazeMapEntity)
+            entities.append(mazeMapEntity)
         }
 
         // Player
         playerComponent = PlayerComponent(
             size: playerSizes,
-            pos: CGPoint(x: 0, y: 0))
-        self.addChild(playerComponent.node)
+            pos: CGPoint(x: 0, y: 0)
+        )
+        addChild(playerComponent.node)
         playerEntity = GKEntity()
         playerEntity?.addComponent(playerComponent)
         if let playerEntity {
-            self.entities.append(playerEntity)
+            entities.append(playerEntity)
         }
+
+        vigenette = SKSpriteNode(imageNamed: "Vigenette")
+        guard let vigenette else { return }
+        vigenette.zPosition = 1000
+        // vigenette.blendMode = .alpha
+        // vigenette.alpha = 0.5
+        vigenette.name = "vigenette"
+        vigenette.size = self.size
+        vigenette.position = CGPoint(x: 0, y: 0)
+        cameraNode.addChild(vigenette)
     }
 
     func teleportEnemy(_ pos: CGPoint) {
         if enemyComponent == nil {
             enemyComponent = EnemyCircle(size: playerSizes, pos: pos)
-            self.addChild(enemyComponent!.node)
+            addChild(enemyComponent!.node)
             enemyEntity = GKEntity()
-            self.entities.append(enemyEntity!)
+            entities.append(enemyEntity!)
         } else {
             enemyComponent!.node.position = pos
         }
@@ -105,10 +117,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         guard validOffsets.count != 0 else { return }
 
-        let chosenOffset = Int.random(in: 0..<validOffsets.count)
+        let chosenOffset = Int.random(in: 0 ..< validOffsets.count)
         let position = mazeMap.getTilePosFromIndex(
             row: i + validOffsets[chosenOffset].0,
-            col: j + validOffsets[chosenOffset].1)
+            col: j + validOffsets[chosenOffset].1
+        )
         teleportEnemy(position)
     }
 
@@ -134,17 +147,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
 
         if playerAndWallCollided {
-            allowMove = false
-            Task {
-                try await Task.sleep(nanoseconds: 1000 * 1000 * 200)
-                allowMove = true
-                print("allowMove true")
-            }
+            // allowMove = false
+            // Task {
+            //     try await Task.sleep(nanoseconds: 1000 * 1000 * 1000)
+            //     allowMove = true
+            //     print("allowMove true")
+            // }
         }
         if playerAndEnemyCollided {
             print("You died")
+            playerDied()
         }
+    }
 
+    private func playerDied() {
+        if let view = view {
+            let deathScene = DeathScene()
+            deathScene.scaleMode = .aspectFill
+            view.presentScene(deathScene)
+        }
     }
 
     // override func mouseDown(with event: NSEvent) {
@@ -165,43 +186,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //     setMousePosition(atPoint: event.location(in: self))
     // }
 
-    var keysPressed = Set<UInt16>()  // Use keyCodes (not characters)
+    var keysPressed = Set<UInt16>() // Use keyCodes (not characters)
 
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
         print(keysPressed)
-        if event.keyCode == 0x31 {  // Space
-            randomTeleportNearPlayer()
-        }
+        // if event.keyCode == 0x31 { // Space, Debugging purposes
+        //     randomTeleportNearPlayer()
+        // }
     }
-
 
     func handleBlink() {
         if !detector.isLeftBlink && !detector.isRightBlink {
             return
         }
-        if self.currentTime - self.lastBlinkTime < self.blinkCooldown {
+        if currentTime - lastBlinkTime < blinkCooldown {
             return
         }
-        self.lastBlinkTime = self.currentTime
-
+        lastBlinkTime = currentTime
 
         if let enemyComponent {
-            let player_pos = self.playerComponent.node.position
+            let player_pos = playerComponent.node.position
             let enemy_pos = enemyComponent.node.position
             let dx = player_pos.x - enemy_pos.x
             let dy = player_pos.y - enemy_pos.y
-            let distance = CGFloat(dx * dx + dy * dy)
+            let squaredDistance = CGFloat(dx * dx + dy * dy)
 
-            if distance <= enemyComponent.killDistance * enemyComponent.killDistance
-            {
+            if squaredDistance <= enemyComponent.killDistance * enemyComponent.killDistance {
                 print("You Died")
+                playerDied()
                 return
             }
         }
 
         randomTeleportNearPlayer()
-
     }
 
     override func keyUp(with event: NSEvent) {
@@ -213,12 +231,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Called before each frame is rendered
 
         // Initialize _lastUpdateTime if it has not already been
-        if self.lastUpdateTime == 0 {
-            self.lastUpdateTime = currentTime
+        if lastUpdateTime == 0 {
+            lastUpdateTime = currentTime
         }
 
         // Calculate time since last update
-        let dt = currentTime - self.lastUpdateTime
+        let dt = currentTime - lastUpdateTime
 
         if let cameraNode {
             // move camera position to player position
@@ -229,28 +247,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         handleKeyboardMovement()
 
-        if currentTime - self.lastBlinkCheckTime >= self.blinkInterval {
-            self.handleBlink()
-            self.lastBlinkCheckTime = currentTime
+        if currentTime - lastBlinkCheckTime >= blinkInterval {
+            handleBlink()
+            lastBlinkCheckTime = currentTime
         }
 
         // Update entities
-        for entity in self.entities {
+        for entity in entities {
             entity.update(deltaTime: dt)
         }
 
-        self.lastUpdateTime = currentTime
+        lastUpdateTime = currentTime
     }
 
     func handleKeyboardMovement() {
         var dx = 0
         var dy = 0
 
-        if keysPressed.contains(0x00) { dx -= 1 }  // A
-        if keysPressed.contains(0x02) { dx += 1 }  // D
-        if keysPressed.contains(0x0D) { dy += 1 }  // W
-        if keysPressed.contains(0x01) { dy -= 1 }  // S
+        if keysPressed.contains(0x00) { dx -= 1 } // A
+        if keysPressed.contains(0x02) { dx += 1 } // D
+        if keysPressed.contains(0x0D) { dy += 1 } // W
+        if keysPressed.contains(0x01) { dy -= 1 } // S
 
-        playerComponent.moveDirection(x: dx, y: dy)
+        if allowMove {
+            playerComponent.moveDirection(x: dx, y: dy)
+        }
     }
 }
