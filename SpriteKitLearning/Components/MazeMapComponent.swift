@@ -4,7 +4,7 @@ import GameplayKit
 class MazeMapComponent: GKComponent {
     let node: SKShapeNode
 
-    let maze: [[Bool]]
+    let maze: [[Int]]
 
     private let tileHeight = CGFloat(200)
     private let tileWidth = CGFloat(200)
@@ -17,7 +17,7 @@ class MazeMapComponent: GKComponent {
 
     private var entityGrid: [[TileComponent]] = []
 
-    init(pos: CGPoint, maze: [[Bool]]) {
+    init(pos: CGPoint, maze: [[Int]]) {
         self.maze = maze
 
         totalHeight = tileHeight * CGFloat(maze.count)
@@ -41,7 +41,7 @@ class MazeMapComponent: GKComponent {
                     pos: CGPoint(
                         x: CGFloat(j) * tileWidth - xOffset, y: CGFloat(-i) * tileHeight + yOffset),
                     size: CGSize(width: tileWidth, height: tileHeight),
-                    isWall: maze[i][j]
+                    pathNode: maze[i][j]
                 )
                 buffer.append(tile)
                 self.node.addChild(tile.node)
