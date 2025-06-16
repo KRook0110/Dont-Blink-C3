@@ -3,8 +3,8 @@ import GameplayKit
 
 class PlayerComponent: GKComponent {
     let node: SKShapeNode
-    let moveAcceleration = CGFloat(200)
-    let maxSpeed: CGFloat = 300.0
+    let moveAcceleration = CGFloat(1500)
+    let maxSpeed: CGFloat = 1500.0
 
     init(size: CGSize, pos: CGPoint) {
         self.node = SKShapeNode(rectOf: size)
@@ -20,7 +20,7 @@ class PlayerComponent: GKComponent {
         pBody.contactTestBitMask = PhysicsCategory.all.rawValue
         // pBody.friction = 0.5
         pBody.restitution = 0.1
-        pBody.linearDamping = 3
+        pBody.linearDamping = 4
         self.node.physicsBody = pBody
 
         super.init()
