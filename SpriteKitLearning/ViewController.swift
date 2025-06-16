@@ -15,7 +15,7 @@ class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-     
+
         let menuScene = MenuScene(size: skView.bounds.size)
         menuScene.scaleMode = .aspectFill
         menuScene.detector = detector
