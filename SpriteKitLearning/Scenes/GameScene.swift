@@ -32,6 +32,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var allowMove = true
     private var mouseIsPressed = false
     
+    private var blackoutNode: SKSpriteNode?
+    
     var detector: EyeBlinkDetector
 
     init(size: CGSize, detector: EyeBlinkDetector) {
@@ -54,6 +56,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode = SKCameraNode()
         self.camera = cameraNode
         self.addChild(cameraNode)
+        
+        // Blink Animation
+        let blackout = SKSpriteNode(color: .black, size: self.size)
+        blackout.zPosition = 1000  // Ensure it's on top of everything
+        blackout.alpha = 0  // Start invisible
+        blackout.position = CGPoint(x: 0, y: 0)
+        blackoutNode = blackout
+        cameraNode.addChild(blackout)
 
         // Maze
         mazeMap = MazeGenerator.generateMaze(pos: CGPoint(x: 0, y: 0))
@@ -129,6 +139,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
+    
+    override func didChangeSize(_ oldSize: CGSize) {
+        super.didChangeSize(oldSize)
+        blackoutNode?.size = self.size
+    }
 
     override func mouseDown(with event: NSEvent) {
         mouseIsPressed = true
@@ -160,8 +175,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func handleBlink() {
         if detector.isLeftBlink && detector.isRightBlink {
+            simulateBlinkTransition()
             randomTeleportNearPlayer()
         }
+    }
+    
+    func simulateBlinkTransition() {
+        guard let blackoutNode = blackoutNode else { return }
+
+        let fadeIn = SKAction.fadeAlpha(to: 1.0, duration: 0.05)
+        let wait = SKAction.wait(forDuration: 0.1)
+        let fadeOut = SKAction.fadeAlpha(to: 0.0, duration: 0.05)
+        let sequence = SKAction.sequence([fadeIn, wait, fadeOut])
+
+        blackoutNode.run(sequence)
     }
 
     override func keyUp(with event: NSEvent) {

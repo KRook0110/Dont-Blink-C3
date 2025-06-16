@@ -59,5 +59,4 @@ class DeathScene: SKScene{
         angel.run(jumpscare)
     }
 
-    
 }
