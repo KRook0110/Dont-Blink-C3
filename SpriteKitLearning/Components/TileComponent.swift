@@ -2,9 +2,9 @@ import GameplayKit
 import SpriteKit
 
 enum pathNode: Int {
-    case floor1 = 0
-    case floor2 = 1
-    case floorCorner = 2
+    case floor1 = 0 // just use floor1
+    case floor2 = 1 // not implemented
+    case floorCorner = 2 // not implemented
     case vWall = 3
     case vWallCorner = 4
     case hWall = 5
