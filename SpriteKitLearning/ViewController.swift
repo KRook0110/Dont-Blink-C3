@@ -15,16 +15,21 @@ class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // let scene = GameScene(size: skView.bounds.size, detector: detector)
-        let scene = GameScene(size: CGSize(width: 1512, height: 982), detector: detector)
-        scene.scaleMode = .aspectFill
-
-        skView.presentScene(scene)
+     
+        let menuScene = MenuScene(size: skView.bounds.size)
+        menuScene.scaleMode = .aspectFill
+        menuScene.detector = detector
+        
+//        let deathScene = DeathScene(size: skView.bounds.size)
+//        deathScene.scaleMode = .aspectFill
+//        deathScene.detector = detector
+        
+        skView.presentScene(menuScene)
         skView.ignoresSiblingOrder = true
         skView.showsFPS = true
         skView.showsNodeCount = true
-        skView.preferredFramesPerSecond = 10000
+
+
     }
 }
 

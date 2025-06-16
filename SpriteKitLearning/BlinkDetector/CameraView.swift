@@ -20,4 +20,4 @@ struct CameraView: NSViewRepresentable {
             previewLayer.frame = nsView.bounds
         }
     }
-} 
+}

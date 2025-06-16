@@ -16,7 +16,9 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     @Published var leftEyePoints: [CGPoint] = []
     @Published var rightEyePoints: [CGPoint] = []
     @Published var faceBoundingBox: CGRect = .zero
-
+    @Published var faceCount: Int = 0
+    @Published var selectedFaceArea: CGFloat = 0.0
+    
     override init() {
         super.init()
         setupCamera()
@@ -37,8 +39,52 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let request = VNDetectFaceLandmarksRequest { [weak self] request, error in
-            guard let results = request.results as? [VNFaceObservation], let face = results.first else { return }
-            self?.processFace(face)
+            guard let results = request.results as? [VNFaceObservation], !results.isEmpty else {
+                // Reset jika tidak ada wajah yang terdeteksi
+                DispatchQueue.main.async {
+                    self?.faceCount = 0
+                    self?.selectedFaceArea = 0.0
+                    self?.landmarks = []
+                    self?.leftEyePoints = []
+                    self?.rightEyePoints = []
+                }
+                return
+            }
+            
+            // Update jumlah wajah yang terdeteksi
+            DispatchQueue.main.async {
+                self?.faceCount = results.count
+            }
+            
+            // Filter wajah yang terlalu kecil (threshold minimum area 0.01)
+            let validFaces = results.filter { face in
+                let area = face.boundingBox.width * face.boundingBox.height
+                return area > 0.01  // Hanya proses wajah dengan area > 1% dari frame
+            }
+            
+            guard !validFaces.isEmpty else {
+                DispatchQueue.main.async {
+                    self?.selectedFaceArea = 0.0
+                }
+                return
+            }
+            
+            // Pilih wajah dengan bounding box terbesar dari wajah yang valid
+            let largestFace = validFaces.max { face1, face2 in
+                let area1 = face1.boundingBox.width * face1.boundingBox.height
+                let area2 = face2.boundingBox.width * face2.boundingBox.height
+                return area1 < area2
+            }
+            
+            guard let selectedFace = largestFace else { return }
+            
+            // Hitung area wajah yang dipilih
+            let selectedArea = selectedFace.boundingBox.width * selectedFace.boundingBox.height
+            DispatchQueue.main.async {
+                self?.selectedFaceArea = selectedArea
+            }
+            
+            self?.processFace(selectedFace)
         }
         try? sequenceHandler.perform([request], on: pixelBuffer)
     }
