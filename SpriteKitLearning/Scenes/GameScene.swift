@@ -9,7 +9,7 @@ import GameplayKit
 import SpriteKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    private let playerSizes = CGSize(width: 60, height: 60)
+    private let playerSizes = CGSize(width: 120, height: 120)
 
     var entities = [GKEntity]()
     var graphs = [String: GKGraph]()
@@ -31,6 +31,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var mousePosition: CGPoint? = nil
     private var allowMove = true
     private var mouseIsPressed = false
+    
+    var winningTileIndex: (row: Int, col: Int) = (4, 13)
+    var winningTilePos: CGPoint {
+        mazeMap.getTilePosFromIndex(row: winningTileIndex.row, col: winningTileIndex.col)
+    }
     
     var detector: EyeBlinkDetector
 
@@ -65,9 +70,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         // Player
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 13, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
-            pos: CGPoint(x: 0, y: 0))
+            pos: spawnPoint)
         self.addChild(playerComponent.node)
         playerEntity = GKEntity()
         playerEntity?.addComponent(playerComponent)
@@ -94,7 +100,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         var validOffsets: [(Int, Int)] = []
         for offset in offsets {
-            if !mazeMap.maze[offset.0 + i][offset.1 + j - 1] {
+            if mazeMap.maze[offset.0 + i][offset.1 + j - 1] == 0{
                 validOffsets.append(offset)
             }
         }
@@ -212,6 +218,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if currentTime - self.lastBlinkCheckTime >= self.blinkInterval {
             self.handleBlink()
             self.lastBlinkCheckTime = currentTime
+        }
+        
+        // winning condition
+        let playerPos = playerComponent.node.position
+        let winPos = winningTilePos
+
+        let distance = hypot(playerPos.x - winPos.x, playerPos.y - winPos.y)
+
+        if distance < 10 {
+            let winScene = WinScene(size: self.size)
+            winScene.scaleMode = .aspectFill
+            self.view?.presentScene(winScene, transition: .flipVertical(withDuration: 1.0))
         }
 
         // Update entities
