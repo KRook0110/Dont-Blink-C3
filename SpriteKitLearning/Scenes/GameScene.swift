@@ -32,7 +32,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     // Heartbeat Audio Properties
     private var heartbeatAudioPlayer: AVAudioPlayer?
     private var isHeartbeatPlaying = false
-    private let maxHeartbeatDistance: CGFloat = 600.0 // Maximum distance to hear heartbeat
+    private let maxHeartbeatDistance: CGFloat = 550.0 // Maximum distance to hear heartbeat
     private let minHeartbeatRate: Float = 0.5 // Slowest heartbeat rate
     private let maxHeartbeatRate: Float = 2.0 // Fastest heartbeat rate
     
@@ -400,7 +400,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     
     private func selectRandomMusic() {
         currentMusicIndex = Int.random(in: 0..<backgroundMusicFiles.count)
-        print("Selected background music: \(backgroundMusicFiles[currentMusicIndex])")
     }
     
     private func setupBackgroundMusic() {
@@ -484,8 +483,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             heartbeatAudioPlayer?.enableRate = true // Enable rate control for tempo changes
             heartbeatAudioPlayer?.rate = minHeartbeatRate // Start with slowest rate
             heartbeatAudioPlayer?.prepareToPlay() // Prepare audio for better performance
-            
-            print("✅ Heartbeat audio setup complete - Rate control enabled")
         } catch {
             print("❌ Error setting up heartbeat audio: \(error)")
         }
@@ -523,9 +520,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             // Apply rate change only - volume stays at 100%
             heartbeatAudioPlayer?.rate = rate
             heartbeatAudioPlayer?.volume = 1.0 // Always 100% volume
-            
-            print("Distance: \(Int(distance)), Rate: \(rate), Volume: 100%")
-            
         } else {
             // Enemy is too far, stop heartbeat
             stopHeartbeatAudio()
@@ -539,8 +533,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         heartbeatPlayer.volume = 1.0 // Always 100% volume
         heartbeatPlayer.rate = minHeartbeatRate // Start with slowest rate
         heartbeatPlayer.play()
-        
-        print("🔊 Heartbeat audio started - Initial rate: \(minHeartbeatRate), Volume: 100%")
     }
     
     private func stopHeartbeatAudio() {
@@ -548,8 +540,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         
         isHeartbeatPlaying = false
         heartbeatAudioPlayer?.stop()
-        
-        print("🔇 Heartbeat audio stopped")
     }
     
 
