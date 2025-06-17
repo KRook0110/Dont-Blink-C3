@@ -24,7 +24,7 @@ class ViewController: NSViewController {
 //        let deathScene = DeathScene(size: skView.bounds.size)
 //        deathScene.scaleMode = .aspectFill
 //        deathScene.detector = detector
-        
+
         skView.presentScene(menuScene)
         skView.ignoresSiblingOrder = true
         skView.showsFPS = true
