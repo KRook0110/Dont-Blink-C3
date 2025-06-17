@@ -140,4 +140,5 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     func getSession() -> AVCaptureSession {
         return session
     }
-} 
+}
+

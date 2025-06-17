@@ -32,10 +32,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var allowMove = true
     private var mouseIsPressed = false
     
-    var winningTileIndex: (row: Int, col: Int) = (4, 13)
+    var winningTileIndex: (row: Int, col: Int) = (9, 13)
     var winningTilePos: CGPoint {
         mazeMap.getTilePosFromIndex(row: winningTileIndex.row, col: winningTileIndex.col)
     }
+    
+    var gameIsEnding = false
+    var isWinSequenceActive = false
+    var isPlayerAutoMoving = false
+    var isCameraShouldFollowPlayer = false
+    
+    private var lastDirectionKey: WalkDirection?
     
     var detector: EyeBlinkDetector
 
@@ -70,10 +77,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 13, col: 14)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 19, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
-            pos: spawnPoint)
+            position: spawnPoint)
         self.addChild(playerComponent.node)
         playerEntity = GKEntity()
         playerEntity?.addComponent(playerComponent)
@@ -157,25 +164,97 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var keysPressed = Set<UInt16>()  // Use keyCodes (not characters)
 
     override func keyDown(with event: NSEvent) {
+        if gameIsEnding { return }
         keysPressed.insert(event.keyCode)
-        print(keysPressed)
+
+        switch event.keyCode {
+        case 0x0D: // W
+            lastDirectionKey = .up
+        case 0x00: // A
+            lastDirectionKey = .left
+        case 0x01: // S
+            lastDirectionKey = .down
+        case 0x02: // D
+            lastDirectionKey = .right
+        default:
+            break
+        }
+
         if event.keyCode == 0x31 { // Space
             randomTeleportNearPlayer()
         }
     }
+
     
-    func handleBlink() {
+    func handleBlink(currentTime: TimeInterval) {
+        // Skip if not enough time has passed
+        guard currentTime - lastBlinkCheckTime >= blinkInterval else { return }
+
+        lastBlinkCheckTime = currentTime
+
         if detector.isLeftBlink && detector.isRightBlink {
             randomTeleportNearPlayer()
         }
     }
+    
+    func transitionToWinSceneWithCameraPan() {
+        let directionx = self.playerComponent.node.position.x
+        let directiony = self.playerComponent.node.position.y + 30
+        
+        if isWinSequenceActive { return }
+        isWinSequenceActive = true
+        isCameraShouldFollowPlayer = true
+        allowMove = false
+        keysPressed.removeAll()
+        mousePosition = CGPoint(x: directionx, y: directiony)
+
+        // Move the player up slightly (camera should follow)
+        let moveUp = SKAction.moveBy(x: 0, y: 5, duration: 1.0)
+        moveUp.timingMode = .easeIn
+        
+        playerComponent.node.run(moveUp)
+//        playerComponent.node.physicsBody?.velocity = .zero
+        playerComponent.walkInPlace(direction: .up, duration: 10.0)
+        
+//        var directionx = self.playerComponent.node.position.x
+//        var directiony = self.playerComponent.node.position.y + 10
+//        self.setMousePosition(atPoint: CGPoint(x: directionx, y: directiony))
+//        self.playerComponent.moveWithoutCollision(mousePosition, duration: 2.0)
+
+        // After player moves up, start camera pan
+        let wait = SKAction.wait(forDuration: 0.0)
+        let startCameraPan = SKAction.run { [weak self] in
+            guard let self = self, let camera = self.camera else { return }
+
+            // Stop camera following the player during camera pan
+            self.isCameraShouldFollowPlayer = false
+
+            let panUp = SKAction.moveBy(x: 0, y: 200, duration: 1.8)
+            panUp.timingMode = .easeIn
+
+            camera.run(panUp) {
+                // Set the static player node (copy it!)
+
+                let winScene = WinScene(size: self.size)
+                winScene.scaleMode = .aspectFill
+                self.view?.presentScene(winScene)
+            }
+        }
+
+        self.run(SKAction.sequence([wait, startCameraPan]))
+        WinScene.playerNode = self.playerComponent.node.copy() as? SKNode
+    }
+
+
 
     override func keyUp(with event: NSEvent) {
+        if gameIsEnding { return }
         keysPressed.remove(event.keyCode)
     }
 
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+        if gameIsEnding { return }
 
         // Initialize _lastUpdateTime if it has not already been
         if self.lastUpdateTime == 0 {
@@ -186,9 +265,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let dt = currentTime - self.lastUpdateTime
 
         // move camera position to player position
-
-        if let player = playerComponent?.node {
-            cameraNode.position = player.position
+        if !isWinSequenceActive || isCameraShouldFollowPlayer {
+            cameraNode.position = playerComponent.node.position
         }
 
         // handle wasd input
@@ -211,14 +289,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
             self.setMousePosition(atPoint: CGPoint(x: directionx, y: directiony))
         }
-
-        // move to mouse direction
-        self.playerComponent.moveDirection(pos: mousePosition)
         
-        if currentTime - self.lastBlinkCheckTime >= self.blinkInterval {
-            self.handleBlink()
-            self.lastBlinkCheckTime = currentTime
+        // But force animation direction from lastDirectionKey if exists
+        if let lastDir = lastDirectionKey {
+            playerComponent.animate(direction: lastDir)
         }
+        
+        // Instead of letting moveToward decide direction, moveToward moves velocity toward mousePosition
+        playerComponent.moveToward(mousePosition)
+        
+        handleBlink(currentTime: currentTime)
         
         // winning condition
         let playerPos = playerComponent.node.position
@@ -226,10 +306,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         let distance = hypot(playerPos.x - winPos.x, playerPos.y - winPos.y)
 
-        if distance < 10 {
-            let winScene = WinScene(size: self.size)
-            winScene.scaleMode = .aspectFill
-            self.view?.presentScene(winScene, transition: .flipVertical(withDuration: 1.0))
+        if distance < 30 {
+//            let winScene = WinScene(size: self.size)
+//            winScene.scaleMode = .aspectFill
+//            self.view?.presentScene(winScene, transition: .flipVertical(withDuration: 1.0))
+            
+            self.playerComponent.node.physicsBody?.velocity = .zero
+            self.playerComponent.moveWithoutCollision(mousePosition, duration: 5.0)
+            transitionToWinSceneWithCameraPan()
         }
 
         // Update entities
