@@ -20,9 +20,9 @@ class DeathScene: SKScene {
     private var defeatAudioPlayer: AVAudioPlayer?
     
     private var homeButton: SKSpriteNode!
-     private var replayButton: SKSpriteNode!
-     private var arrowNode: SKSpriteNode!
-     private var selectedIndex = 0 // 0 = home, 1 = replay
+    private var replayButton: SKSpriteNode!
+    private var arrowNode: SKSpriteNode!
+    private var selectedIndex = 0 // 0 = home, 1 = replay
 
 //>>>>>>> dev-valen
     override func didMove(to view: SKView) {
@@ -31,8 +31,9 @@ class DeathScene: SKScene {
 //        overlay.zPosition = -1
 //        addChild(overlay)
         
-        // Play jumpscare audio immediately
+        // Play jumpscare and defeat audio immediately
         playJumpscareAudio()
+        playDefeatAudio()
         
 //<<<<<<< HEAD
 //
@@ -94,8 +95,7 @@ class DeathScene: SKScene {
                 
             let wait = SKAction.wait(forDuration: 2)
             let showLabel = SKAction.run {
-                // Start defeat audio after jumpscare
-                self.fadeOutJumpscareAndPlayDefeat()
+                self.fadeOutJumpscareAudio()
                 
                 self.camera?.setScale(1.0)
                 let blackBg = SKSpriteNode(imageNamed: "DefeatedPage")
@@ -144,18 +144,15 @@ class DeathScene: SKScene {
         
         do {
             jumpscareAudioPlayer = try AVAudioPlayer(contentsOf: url)
-            jumpscareAudioPlayer?.volume = 0.8
+            jumpscareAudioPlayer?.volume = 0.5
             jumpscareAudioPlayer?.play()
         } catch {
             print("Error playing jumpscare audio: \(error)")
         }
     }
     
-    private func fadeOutJumpscareAndPlayDefeat() {
-        // Fade out jumpscare audio
+    private func fadeOutJumpscareAudio() {
         fadeOutAudio(player: jumpscareAudioPlayer, duration: 0.5) {
-            // Play defeat audio after jumpscare fades out
-            self.playDefeatAudio()
         }
     }
     
@@ -172,7 +169,7 @@ class DeathScene: SKScene {
             defeatAudioPlayer?.play()
             
             // Fade in defeat audio
-            fadeInAudio(player: defeatAudioPlayer, targetVolume: 0.4, duration: 1.0)
+            fadeInAudio(player: defeatAudioPlayer, targetVolume: 0.5, duration: 4.0)
         } catch {
             print("Error playing defeat audio: \(error)")
         }
@@ -294,7 +291,5 @@ class DeathScene: SKScene {
             arrowNode.position = CGPoint(x: replayButton.position.x - 60, y: replayButton.position.y)
         }
     }
-//
-//>>>>>>> dev-valen
 }
 
