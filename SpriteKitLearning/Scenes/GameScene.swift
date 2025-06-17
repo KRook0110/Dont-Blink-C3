@@ -7,8 +7,9 @@
 
 import GameplayKit
 import SpriteKit
+import AVFoundation
 
-class GameScene: SKScene, SKPhysicsContactDelegate {
+class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private let playerSizes = CGSize(width: 120, height: 120)
     
     var entities = [GKEntity]()
@@ -22,6 +23,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
     private var vigenette: SKSpriteNode?
+    
+    // Background Music Properties
+    private var backgroundMusicPlayer: AVAudioPlayer?
+    private let backgroundMusicFiles = ["audio_bgm_1", "audio_bgm_2", "audio_bgm_3"]
+    private var currentMusicIndex = 0
     
     private var lastBlinkCheckTime: TimeInterval = 0
     private let blinkInterval: TimeInterval = 0.1
@@ -117,6 +123,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         vigenette.size = size
         vigenette.position = CGPoint(x: 0, y: 0)
         cameraNode.addChild(vigenette)
+        
+        // Background Music
+        playBackgroundMusic()
     }
     
     func teleportEnemy(_ pos: CGPoint) {
@@ -221,6 +230,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func playerDied() {
+        // Stop background music before transitioning
+        stopBackgroundMusic()
+        
         if let view = view {
             self.camera = nil
             cameraNode.removeFromParent()
@@ -333,6 +345,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let squaredDistance =  dx * dx + dy * dy
         
         if squaredDistance < 20 * 20 {
+            // Stop background music before transitioning
+            stopBackgroundMusic()
+            
             let winScene = WinScene(size: size)
             winScene.scaleMode = .aspectFill
             view?.presentScene(winScene, transition: .flipVertical(withDuration: 1.0))
@@ -356,6 +371,96 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if allowMove {
             playerComponent.moveDirection(x: dx, y: dy)
+        }
+    }
+    
+    private func playBackgroundMusic() {
+        selectRandomMusic()
+        setupBackgroundMusic()
+    }
+    
+    private func selectRandomMusic() {
+        currentMusicIndex = Int.random(in: 0..<backgroundMusicFiles.count)
+        print("Selected background music: \(backgroundMusicFiles[currentMusicIndex])")
+    }
+    
+    private func setupBackgroundMusic() {
+        let musicFileName = backgroundMusicFiles[currentMusicIndex]
+        
+        guard let url = Bundle.main.url(forResource: musicFileName, withExtension: "mp3") else {
+            print("Could not find \(musicFileName).mp3 file")
+            return
+        }
+        
+        do {
+            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: url)
+            backgroundMusicPlayer?.delegate = self
+            backgroundMusicPlayer?.numberOfLoops = 0 // Play once, we'll handle the loop manually
+            backgroundMusicPlayer?.volume = 0.0 // Start with volume 0 for fade in
+            backgroundMusicPlayer?.play()
+            
+            // Fade in effect
+            fadeInGameMusic()
+        } catch {
+            print("Error playing background music: \(error)")
+        }
+    }
+    
+    private func fadeInGameMusic() {
+        guard let player = backgroundMusicPlayer else { return }
+        
+        let fadeInDuration: TimeInterval = 1.0
+        let steps = 20
+        let stepDuration = fadeInDuration / Double(steps)
+        let volumeStep = 0.3 / Float(steps) // Target volume 0.3 (lower than menu)
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                player.volume = volumeStep * Float(i)
+            }
+        }
+    }
+    
+    private func fadeOutGameMusic(completion: @escaping () -> Void) {
+        guard let player = backgroundMusicPlayer else {
+            completion()
+            return
+        }
+        
+        let fadeOutDuration: TimeInterval = 1.0
+        let steps = 20
+        let stepDuration = fadeOutDuration / Double(steps)
+        let currentVolume = player.volume
+        let volumeStep = currentVolume / Float(steps)
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                player.volume = currentVolume - (volumeStep * Float(i))
+                
+                if i == steps {
+                    player.stop()
+                    completion()
+                }
+            }
+        }
+    }
+    
+    private func stopBackgroundMusic() {
+        fadeOutGameMusic {
+            self.backgroundMusicPlayer = nil
+        }
+    }
+    
+    // MARK: - AVAudioPlayerDelegate
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        if flag {
+            // Smooth transition to next random song
+            fadeOutGameMusic {
+                // Select new random music
+                self.selectRandomMusic()
+                // Play the new music with fade in
+                self.setupBackgroundMusic()
+            }
         }
     }
 }

@@ -7,11 +7,16 @@
 
 
 import SpriteKit
+import AVFoundation
 
 class MenuScene: SKScene {
     var detector: EyeBlinkDetector = EyeBlinkDetector()
+    var backgroundMusicPlayer: AVAudioPlayer?
 
     override func didMove(to view: SKView) {
+        
+        // Setup and play background music with fade in
+        setupBackgroundMusic()
         
         let overlay = SKSpriteNode(color: .black.withAlphaComponent(0.5), size: size)
         overlay.position = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -104,16 +109,80 @@ class MenuScene: SKScene {
         //    }
         
     }
-    override func keyDown(with event: NSEvent) {
-        if event.keyCode == 36 { // 36 = Return/Enter key
-            //>>>>>>> dev-valen
+    
+    func setupBackgroundMusic() {
+        guard let url = Bundle.main.url(forResource: "audio_menu", withExtension: "mp3") else {
+            print("Could not find audio_menu.mp3 file")
+            return
+        }
+        
+        do {
+            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: url)
+            backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
+            backgroundMusicPlayer?.volume = 0.0 // Start with volume 0 for fade in
+            backgroundMusicPlayer?.play()
+            
+            // Fade in effect
+            fadeInMusic()
+        } catch {
+            print("Error playing background music: \(error)")
+        }
+    }
+    
+    func fadeInMusic() {
+        guard let player = backgroundMusicPlayer else { return }
+        
+        let fadeInDuration: TimeInterval = 2.0
+        let steps = 20
+        let stepDuration = fadeInDuration / Double(steps)
+        let volumeStep = 0.5 / Float(steps) // Target volume 0.5
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                player.volume = volumeStep * Float(i)
+            }
+        }
+    }
+    
+    func fadeOutMusic(completion: @escaping () -> Void) {
+        guard let player = backgroundMusicPlayer else {
+            completion()
+            return
+        }
+        
+        let fadeOutDuration: TimeInterval = 1.0
+        let steps = 20
+        let stepDuration = fadeOutDuration / Double(steps)
+        let currentVolume = player.volume
+        let volumeStep = currentVolume / Float(steps)
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                player.volume = currentVolume - (volumeStep * Float(i))
+                
+                if i == steps {
+                    player.stop()
+                    completion()
+                }
+            }
+        }
+    }
+    
+    func transitionToGameScene() {
+        fadeOutMusic {
             if let view = self.view {
                 let transition = SKTransition.fade(withDuration: 1.0)
                 let gameScene = GameScene(size: self.size, detector: self.detector)
                 gameScene.scaleMode = .aspectFill
-                
                 view.presentScene(gameScene, transition: transition)
             }
+        }
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 36 { // 36 = Return/Enter key
+            //>>>>>>> dev-valen
+            transitionToGameScene()
         }
     }
     
@@ -123,13 +192,7 @@ class MenuScene: SKScene {
         
         
         if node.name == "startButton" { // Make sure your node has this name set
-            if let view = self.view {
-//                let deathScene = DeathScene(size: self.size)
-                let gameScene = GameScene(size: self.size, detector: self.detector)
-                gameScene.scaleMode = .aspectFill
-                let transition = SKTransition.fade(withDuration: 1.0)
-                view.presentScene(gameScene, transition: transition)
-            }
+            transitionToGameScene()
         }
         
     }

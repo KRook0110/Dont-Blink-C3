@@ -15,11 +15,15 @@ class DeathScene: SKScene {
     var detector = EyeBlinkDetector()
     var videoNode: SKVideoNode?
     
+    // Audio Properties
+    private var jumpscareAudioPlayer: AVAudioPlayer?
+    private var defeatAudioPlayer: AVAudioPlayer?
+    
     private var homeButton: SKSpriteNode!
      private var replayButton: SKSpriteNode!
      private var arrowNode: SKSpriteNode!
      private var selectedIndex = 0 // 0 = home, 1 = replay
-    
+
 //>>>>>>> dev-valen
     override func didMove(to view: SKView) {
 //        let overlay = SKSpriteNode(color: .black, size: size)
@@ -27,6 +31,8 @@ class DeathScene: SKScene {
 //        overlay.zPosition = -1
 //        addChild(overlay)
         
+        // Play jumpscare audio immediately
+        playJumpscareAudio()
         
 //<<<<<<< HEAD
 //
@@ -88,6 +94,9 @@ class DeathScene: SKScene {
                 
             let wait = SKAction.wait(forDuration: 2)
             let showLabel = SKAction.run {
+                // Start defeat audio after jumpscare
+                self.fadeOutJumpscareAndPlayDefeat()
+                
                 self.camera?.setScale(1.0)
                 let blackBg = SKSpriteNode(imageNamed: "DefeatedPage")
                 blackBg.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
@@ -126,6 +135,97 @@ class DeathScene: SKScene {
         }
     }
     
+    // MARK: - Audio Management
+    private func playJumpscareAudio() {
+        guard let url = Bundle.main.url(forResource: "audio_jumpscare", withExtension: "mp3") else {
+            print("Could not find audio_jumpscare.mp3 file")
+            return
+        }
+        
+        do {
+            jumpscareAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            jumpscareAudioPlayer?.volume = 0.8
+            jumpscareAudioPlayer?.play()
+        } catch {
+            print("Error playing jumpscare audio: \(error)")
+        }
+    }
+    
+    private func fadeOutJumpscareAndPlayDefeat() {
+        // Fade out jumpscare audio
+        fadeOutAudio(player: jumpscareAudioPlayer, duration: 0.5) {
+            // Play defeat audio after jumpscare fades out
+            self.playDefeatAudio()
+        }
+    }
+    
+    private func playDefeatAudio() {
+        guard let url = Bundle.main.url(forResource: "audio_defeat", withExtension: "mp3") else {
+            print("Could not find audio_defeat.mp3 file")
+            return
+        }
+        
+        do {
+            defeatAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            defeatAudioPlayer?.volume = 0.0 // Start with 0 for fade in
+            defeatAudioPlayer?.numberOfLoops = -1 // Loop defeat music
+            defeatAudioPlayer?.play()
+            
+            // Fade in defeat audio
+            fadeInAudio(player: defeatAudioPlayer, targetVolume: 0.4, duration: 1.0)
+        } catch {
+            print("Error playing defeat audio: \(error)")
+        }
+    }
+    
+    private func fadeInAudio(player: AVAudioPlayer?, targetVolume: Float, duration: TimeInterval) {
+        guard let player = player else { return }
+        
+        let steps = 20
+        let stepDuration = duration / Double(steps)
+        let volumeStep = targetVolume / Float(steps)
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                player.volume = volumeStep * Float(i)
+            }
+        }
+    }
+    
+    private func fadeOutAudio(player: AVAudioPlayer?, duration: TimeInterval, completion: @escaping () -> Void) {
+        guard let player = player else {
+            completion()
+            return
+        }
+        
+        let steps = 20
+        let stepDuration = duration / Double(steps)
+        let currentVolume = player.volume
+        let volumeStep = currentVolume / Float(steps)
+        
+        for i in 0...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
+                player.volume = currentVolume - (volumeStep * Float(i))
+                
+                if i == steps {
+                    player.stop()
+                    completion()
+                }
+            }
+        }
+    }
+    
+    private func stopAllAudio() {
+        // Stop jumpscare audio
+        jumpscareAudioPlayer?.stop()
+        jumpscareAudioPlayer = nil
+        
+        // Fade out and stop defeat audio
+        fadeOutAudio(player: defeatAudioPlayer, duration: 0.5) {
+            self.defeatAudioPlayer = nil
+        }
+    }
+    
     override func keyDown(with event: NSEvent) {
             switch event.keyCode {
             case 48: // Tab key
@@ -133,6 +233,9 @@ class DeathScene: SKScene {
                 updateSelection()
                 
             case 36: // Return key
+                // Stop all audio before transitioning
+                stopAllAudio()
+                
                 if selectedIndex == 0 {
                     // Home
                     print("Go to Home Scene")
@@ -152,6 +255,31 @@ class DeathScene: SKScene {
                 break
             }
         }
+    
+    override func mouseDown(with event: NSEvent) {
+        let location = event.location(in: self)
+        let node = self.atPoint(location)
+        
+        if node.name == "homeButton" || node == homeButton {
+            // Stop all audio before transitioning
+            stopAllAudio()
+            
+            print("Go to Home Scene")
+            let menuScene = MenuScene(size: self.size)
+            menuScene.scaleMode = .aspectFill
+            menuScene.detector = self.detector
+            view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
+            
+        } else if node.name == "replayButton" || node == replayButton {
+            // Stop all audio before transitioning
+            stopAllAudio()
+            
+            print("Replay Game")
+            let gameScene = GameScene(size: self.size, detector: self.detector)
+            gameScene.scaleMode = .aspectFill
+            view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
+        }
+    }
     
     private func updateSelection() {
         if selectedIndex == 0 {
