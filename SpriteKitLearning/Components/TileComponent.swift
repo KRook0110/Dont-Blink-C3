@@ -2,9 +2,9 @@ import GameplayKit
 import SpriteKit
 
 enum pathNode: Int {
-    case floor1 = 0 // just use floor1
-    case floor2 = 1 // not implemented
-    case floorCorner = 2 // not implemented
+    case floor1 = 0
+    case finish = 1
+    case finishWall = 2
     case vWall = 3
     case vWallCorner = 4
     case hWall = 5
@@ -23,15 +23,23 @@ class TileComponent: GKComponent {
             self.node.fillColor = .white
             self.node.lineWidth = 0
         } else if pathNode == 1 {
-            let texture = SKTexture(imageNamed: "floor2")
+            let texture = SKTexture(imageNamed: "Finish")
             self.node.fillTexture = texture
             self.node.fillColor = .white
             self.node.lineWidth = 0
         } else if pathNode == 2 {
-            let texture = SKTexture(imageNamed: "floor3")
+            let pbody = SKPhysicsBody(rectangleOf: size)
+            let texture = SKTexture(imageNamed: "Finish")
             self.node.fillTexture = texture
             self.node.fillColor = .white
+            pbody.collisionBitMask = PhysicsCategory.all.rawValue
+            pbody.contactTestBitMask = PhysicsCategory.all.rawValue
+            pbody.affectedByGravity = false
+            pbody.allowsRotation = false
+            pbody.isDynamic = false
+            pbody.categoryBitMask = PhysicsCategory.wall.rawValue
             self.node.lineWidth = 0
+            self.node.physicsBody = pbody
         } else if pathNode == 3 {
             let pbody = SKPhysicsBody(rectangleOf: size)
             let texture = SKTexture(imageNamed: "full-tile")

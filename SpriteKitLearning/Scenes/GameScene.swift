@@ -45,7 +45,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var winningTileIndex: (row: Int, col: Int) = (4, 13)
     //        var winningTileIndex: (row: Int, col: Int) = (13, 13)
-    
     var winningTilePos: CGPoint {
         mazeMap.getTilePosFromIndex(row: winningTileIndex.row, col: winningTileIndex.col)
     }
@@ -96,12 +95,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 13, col: 14)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 19, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
-            pos: spawnPoint
-        )
-        addChild(playerComponent.node)
+            position: spawnPoint)
+        self.addChild(playerComponent.node)
         playerEntity = GKEntity()
         playerEntity?.addComponent(playerComponent)
         if let playerEntity {
@@ -245,9 +243,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var keysPressed = Set<UInt16>() // Use keyCodes (not characters)
     
     override func keyDown(with event: NSEvent) {
+        if gameIsEnding { return }
         keysPressed.insert(event.keyCode)
-        print(keysPressed)
-        if event.keyCode == 0x31 {
+      
+        switch event.keyCode {
+        case 0x0D: // W
+            lastDirectionKey = .up
+        case 0x00: // A
+            lastDirectionKey = .left
+        case 0x01: // S
+            lastDirectionKey = .down
+        case 0x02: // D
+            lastDirectionKey = .right
+        default:
+            break
+        }
+
+        if event.keyCode == 0x31 { // Space
             randomTeleportNearPlayer()
         }
     }
@@ -280,7 +292,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         randomTeleportNearPlayer()
     }
-    
+
     func simulateBlinkTransition() {
         guard let blackoutNode = blackoutNode else { return }
         
@@ -291,8 +303,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         blackoutNode.run(sequence)
     }
-    
+
     override func keyUp(with event: NSEvent) {
+        if gameIsEnding { return }
         keysPressed.remove(event.keyCode)
     }
     
@@ -309,7 +322,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let dt = currentTime - lastUpdateTime
         
         // move camera position to player position
-        
+  
         if let cameraNode {
             // move camera position to player position
             if let player = playerComponent?.node {
@@ -324,18 +337,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             lastBlinkCheckTime = currentTime
         }
         
+
         // winning condition
         let playerPos = playerComponent.node.position
         let winPos = winningTilePos
         
         let dx = playerPos.x - winPos.x
         let dy = playerPos.y - winPos.y
+
         let squaredDistance =  dx * dx + dy * dy
         
         if squaredDistance < 20 * 20 {
             let winScene = WinScene(size: size)
             winScene.scaleMode = .aspectFill
             view?.presentScene(winScene, transition: .flipVertical(withDuration: 1.0))
+
         }
         
         // Update entities
