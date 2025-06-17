@@ -123,53 +123,16 @@ class MenuScene: SKScene {
             backgroundMusicPlayer?.play()
             
             // Fade in effect
-            fadeInMusic()
+            fadeInAudio(player: backgroundMusicPlayer, targetVolume: 0.5, duration: 2.0)
         } catch {
             print("Error playing background music: \(error)")
         }
     }
     
-    func fadeInMusic() {
-        guard let player = backgroundMusicPlayer else { return }
-        
-        let fadeInDuration: TimeInterval = 2.0
-        let steps = 20
-        let stepDuration = fadeInDuration / Double(steps)
-        let volumeStep = 0.5 / Float(steps) // Target volume 0.5
-        
-        for i in 0...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = volumeStep * Float(i)
-            }
-        }
-    }
-    
-    func fadeOutMusic(completion: @escaping () -> Void) {
-        guard let player = backgroundMusicPlayer else {
-            completion()
-            return
-        }
-        
-        let fadeOutDuration: TimeInterval = 1.0
-        let steps = 20
-        let stepDuration = fadeOutDuration / Double(steps)
-        let currentVolume = player.volume
-        let volumeStep = currentVolume / Float(steps)
-        
-        for i in 0...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = currentVolume - (volumeStep * Float(i))
-                
-                if i == steps {
-                    player.stop()
-                    completion()
-                }
-            }
-        }
-    }
+
     
     func transitionToGameScene() {
-        fadeOutMusic {
+        fadeOutAudio(player: backgroundMusicPlayer, duration: 1.0) {
             if let view = self.view {
                 let transition = SKTransition.fade(withDuration: 1.0)
                 let gameScene = GameScene(size: self.size, detector: self.detector)

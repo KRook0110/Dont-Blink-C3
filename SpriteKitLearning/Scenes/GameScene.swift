@@ -418,53 +418,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             backgroundMusicPlayer?.play()
             
             // Fade in effect
-            fadeInGameMusic()
+            fadeInAudio(player: backgroundMusicPlayer, targetVolume: 0.3, duration: 1.0)
         } catch {
             print("Error playing background music: \(error)")
         }
     }
     
-    private func fadeInGameMusic() {
-        guard let player = backgroundMusicPlayer else { return }
-        
-        let fadeInDuration: TimeInterval = 1.0
-        let steps = 20
-        let stepDuration = fadeInDuration / Double(steps)
-        let volumeStep = 0.3 / Float(steps) // Target volume 0.3 (lower than menu)
-        
-        for i in 0...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = volumeStep * Float(i)
-            }
-        }
-    }
-    
-    private func fadeOutGameMusic(completion: @escaping () -> Void) {
-        guard let player = backgroundMusicPlayer else {
-            completion()
-            return
-        }
-        
-        let fadeOutDuration: TimeInterval = 1.0
-        let steps = 20
-        let stepDuration = fadeOutDuration / Double(steps)
-        let currentVolume = player.volume
-        let volumeStep = currentVolume / Float(steps)
-        
-        for i in 0...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = currentVolume - (volumeStep * Float(i))
-                
-                if i == steps {
-                    player.stop()
-                    completion()
-                }
-            }
-        }
-    }
+
     
     private func stopBackgroundMusic() {
-        fadeOutGameMusic {
+        fadeOutAudio(player: backgroundMusicPlayer, duration: 1.0) {
             self.backgroundMusicPlayer = nil
         }
     }
@@ -548,7 +511,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         if flag {
             // Smooth transition to next random song
-            fadeOutGameMusic {
+            fadeOutAudio(player: backgroundMusicPlayer, duration: 1.0) {
                 // Select new random music
                 self.selectRandomMusic()
                 // Play the new music with fade in

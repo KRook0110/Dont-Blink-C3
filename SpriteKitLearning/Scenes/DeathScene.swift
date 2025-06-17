@@ -175,42 +175,7 @@ class DeathScene: SKScene {
         }
     }
     
-    private func fadeInAudio(player: AVAudioPlayer?, targetVolume: Float, duration: TimeInterval) {
-        guard let player = player else { return }
-        
-        let steps = 20
-        let stepDuration = duration / Double(steps)
-        let volumeStep = targetVolume / Float(steps)
-        
-        for i in 0...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = volumeStep * Float(i)
-            }
-        }
-    }
-    
-    private func fadeOutAudio(player: AVAudioPlayer?, duration: TimeInterval, completion: @escaping () -> Void) {
-        guard let player = player else {
-            completion()
-            return
-        }
-        
-        let steps = 20
-        let stepDuration = duration / Double(steps)
-        let currentVolume = player.volume
-        let volumeStep = currentVolume / Float(steps)
-        
-        for i in 0...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = currentVolume - (volumeStep * Float(i))
-                
-                if i == steps {
-                    player.stop()
-                    completion()
-                }
-            }
-        }
-    }
+
     
     private func stopAllAudio() {
         // Stop jumpscare audio
