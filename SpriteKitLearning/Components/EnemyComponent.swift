@@ -19,7 +19,7 @@ class EnemyCircle: GKComponent {
 
     init(size: CGSize, pos: CGPoint) {
         self.node = SKShapeNode(ellipseOf: size)
-        let texture = SKTexture(imageNamed: "Angel")
+        let texture = SKTexture(imageNamed: "DarkAngel")
         self.node.fillTexture = texture
         self.node.fillColor = .white
         self.node.lineWidth = 0

@@ -9,7 +9,7 @@
 import SpriteKit
 
 class MenuScene: SKScene {
-    var detector: EyeBlinkDetector!
+    var detector: EyeBlinkDetector = EyeBlinkDetector()
     override func didMove(to view: SKView) {
 
         let overlay = SKSpriteNode(color: .black.withAlphaComponent(0.5), size: size)

@@ -49,3 +49,4 @@ struct LandmarkOverlay: View {
         .allowsHitTesting(false)
     }
 }
+
