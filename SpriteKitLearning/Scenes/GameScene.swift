@@ -29,6 +29,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private let backgroundMusicFiles = ["audio_bgm_1", "audio_bgm_2", "audio_bgm_3"]
     private var currentMusicIndex = 0
     
+    // Heartbeat Audio Properties
+    private var heartbeatAudioPlayer: AVAudioPlayer?
+    private var isHeartbeatPlaying = false
+    private let maxHeartbeatDistance: CGFloat = 600.0 // Maximum distance to hear heartbeat
+    private let minHeartbeatRate: Float = 0.5 // Slowest heartbeat rate
+    private let maxHeartbeatRate: Float = 2.0 // Fastest heartbeat rate
+    
     private var lastBlinkCheckTime: TimeInterval = 0
     private let blinkInterval: TimeInterval = 0.1
     
@@ -126,6 +133,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         
         // Background Music
         playBackgroundMusic()
+        
+        // Heartbeat Audio
+        setupHeartbeatAudio()
     }
     
     func teleportEnemy(_ pos: CGPoint) {
@@ -233,6 +243,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         // Stop background music before transitioning
         stopBackgroundMusic()
         
+        // Stop heartbeat audio
+        stopHeartbeatAudio()
+        
         if let view = view {
             self.camera = nil
             cameraNode.removeFromParent()
@@ -336,6 +349,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             lastBlinkCheckTime = currentTime
         }
         
+        // Update heartbeat audio based on enemy proximity
+        updateHeartbeatAudio()
+        
         // winning condition
         let playerPos = playerComponent.node.position
         let winPos = winningTilePos
@@ -347,6 +363,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         if squaredDistance < 20 * 20 {
             // Stop background music before transitioning
             stopBackgroundMusic()
+            
+            // Stop heartbeat audio
+            stopHeartbeatAudio()
             
             let winScene = WinScene(size: size)
             winScene.scaleMode = .aspectFill
@@ -450,6 +469,90 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             self.backgroundMusicPlayer = nil
         }
     }
+    
+    // MARK: - Heartbeat Audio Management
+    private func setupHeartbeatAudio() {
+        guard let url = Bundle.main.url(forResource: "audio_bpm", withExtension: "mp3") else {
+            print("❌ Could not find audio_bpm.mp3 file")
+            return
+        }
+        
+        do {
+            heartbeatAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            heartbeatAudioPlayer?.numberOfLoops = -1 // Loop indefinitely
+            heartbeatAudioPlayer?.volume = 1.0 // Full volume 100%
+            heartbeatAudioPlayer?.enableRate = true // Enable rate control for tempo changes
+            heartbeatAudioPlayer?.rate = minHeartbeatRate // Start with slowest rate
+            heartbeatAudioPlayer?.prepareToPlay() // Prepare audio for better performance
+            
+            print("✅ Heartbeat audio setup complete - Rate control enabled")
+        } catch {
+            print("❌ Error setting up heartbeat audio: \(error)")
+        }
+    }
+    
+    private func updateHeartbeatAudio() {
+        guard let playerPos = playerComponent?.node.position else {
+            // No player, stop heartbeat
+            stopHeartbeatAudio()
+            return
+        }
+        
+        guard let enemyPos = enemyComponent?.node.position else {
+            // No enemy spawned yet, stop heartbeat
+            stopHeartbeatAudio()
+            return
+        }
+        
+        // Calculate distance between player and enemy
+        let dx = playerPos.x - enemyPos.x
+        let dy = playerPos.y - enemyPos.y
+        let distance = sqrt(dx * dx + dy * dy)
+        
+        if distance <= maxHeartbeatDistance {
+            // Enemy is close enough to trigger heartbeat
+            if !isHeartbeatPlaying {
+                startHeartbeatAudio()
+            }
+            
+            // Calculate heartbeat rate based on distance
+            // Closer = faster heartbeat tempo
+            let normalizedDistance = max(0.0, min(1.0, distance / maxHeartbeatDistance))
+            let rate = maxHeartbeatRate - (Float(normalizedDistance) * (maxHeartbeatRate - minHeartbeatRate))
+            
+            // Apply rate change only - volume stays at 100%
+            heartbeatAudioPlayer?.rate = rate
+            heartbeatAudioPlayer?.volume = 1.0 // Always 100% volume
+            
+            print("Distance: \(Int(distance)), Rate: \(rate), Volume: 100%")
+            
+        } else {
+            // Enemy is too far, stop heartbeat
+            stopHeartbeatAudio()
+        }
+    }
+    
+    private func startHeartbeatAudio() {
+        guard let heartbeatPlayer = heartbeatAudioPlayer, !isHeartbeatPlaying else { return }
+        
+        isHeartbeatPlaying = true
+        heartbeatPlayer.volume = 1.0 // Always 100% volume
+        heartbeatPlayer.rate = minHeartbeatRate // Start with slowest rate
+        heartbeatPlayer.play()
+        
+        print("🔊 Heartbeat audio started - Initial rate: \(minHeartbeatRate), Volume: 100%")
+    }
+    
+    private func stopHeartbeatAudio() {
+        guard isHeartbeatPlaying else { return }
+        
+        isHeartbeatPlaying = false
+        heartbeatAudioPlayer?.stop()
+        
+        print("🔇 Heartbeat audio stopped")
+    }
+    
+
     
     // MARK: - AVAudioPlayerDelegate
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
