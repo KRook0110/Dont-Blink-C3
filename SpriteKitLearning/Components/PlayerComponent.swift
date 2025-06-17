@@ -6,6 +6,7 @@ enum WalkDirection: Int, CaseIterable {
 }
 
 class PlayerComponent: GKComponent {
+
     let node: SKSpriteNode
     let maxSpeed: CGFloat = 300.0
     var walkFrames: [WalkDirection: [SKTexture]] = [:]
@@ -28,7 +29,7 @@ class PlayerComponent: GKComponent {
         body.restitution = 0.5
         body.linearDamping = 0.5
         self.node.physicsBody = body
-        
+
         super.init()
         
         loadWalkFrames()
@@ -64,7 +65,6 @@ class PlayerComponent: GKComponent {
         }
     }
 
-    
     func animate(direction: WalkDirection) {
         guard let frames = walkFrames[direction] else { return }
         
