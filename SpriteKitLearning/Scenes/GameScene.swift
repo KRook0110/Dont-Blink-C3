@@ -3,8 +3,8 @@ import SpriteKit
 import AVFoundation
 
 class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
-    private let playerSizes = CGSize(width: 120, height: 120)
-    
+    private let playerSizes = CGSize(width: 190, height: 190)
+
     var entities = [GKEntity]()
     var graphs = [String: GKGraph]()
     var playerEntity: GKEntity?
@@ -15,38 +15,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
     private var vignette: SKSpriteNode?
-    private var shouldHandleBlink = true 
-    
+    private var shouldHandleBlink = true
+
     // Background Music Properties
     private var backgroundMusicPlayer: AVAudioPlayer?
     private let backgroundMusicFiles = ["audio_bgm_1", "audio_bgm_2", "audio_bgm_3"]
     private var currentMusicIndex = 0
-    
+
     // Heartbeat Audio Properties
     private var heartbeatAudioPlayer: AVAudioPlayer?
     private var isHeartbeatPlaying = false
     private let maxHeartbeatDistance: CGFloat = 550.0 // Maximum distance to hear heartbeat
     private let minHeartbeatRate: Float = 1.0 // Slowest heartbeat rate
     private let maxHeartbeatRate: Float = 3.0 // Fastest heartbeat rate
-    
+
     private var lastBlinkCheckTime: TimeInterval = 0
     private let blinkInterval: TimeInterval = 0.1
-    
-    private let blinkCooldown: TimeInterval = 1
+
+    private let blinkCooldown: TimeInterval = 0.5
     private var currentTime: TimeInterval = 0
     private var lastBlinkTime: TimeInterval = 0
-    
+
     private var lastUpdateTime: TimeInterval = 0
     private var label: SKLabelNode?
     private var spinnyNode: SKShapeNode?
     private var mousePosition: CGPoint? = nil
     private var allowMove = true
     private var mouseIsPressed = false
-    
+
     private var blackoutNode: SKSpriteNode?
-    
+
     var winningTileIndex: (row: Int, col: Int) = (9, 13)
-    
+
     var winningTilePos: CGPoint {
         mazeMap.getTilePosFromIndex(row: winningTileIndex.row, col: winningTileIndex.col)
     }
@@ -54,39 +54,39 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     var isWinSequenceActive = false
     var isPLayerAutoMoving = false
     var isCameraShouldFollowPlayer = false
-    
+
     private var lastDirectionKey: WalkDirection?
     var detector: EyeBlinkDetector
-    
+
     init(size: CGSize, detector: EyeBlinkDetector) {
         self.detector = detector
         super.init(size: size)
     }
-    
+
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func sceneDidLoad() {
         lastUpdateTime = 0
-        
+
         physicsWorld.contactDelegate = self
-        
+
         cameraNode = SKCameraNode()
         camera = cameraNode
         camera?.setScale(CGFloat(3.0))
         addChild(cameraNode)
-        
+
         // Blink Animation
         let blackout = SKSpriteNode(color: .black, size: self.size)
-        blackout.zPosition = 5 // Ensure it's on top of everything
+        blackout.zPosition = 20000 // Ensure it's on top of everything
         blackout.alpha = 0  // Start invisible
         blackout.position = CGPoint(x: 0, y: 0)
         blackoutNode = blackout
         cameraNode.addChild(blackout)
         //>>>>>>> dev-valen
-        
+
         // Maze
         mazeMap = MazeGenerator.generateMaze(pos: CGPoint(x: 0, y: 0))
         addChild(mazeMap.node)
@@ -95,9 +95,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         if let mazeMapEntity {
             entities.append(mazeMapEntity)
         }
-        
+
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 19, col: 14)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 12, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
             pos: spawnPoint
@@ -108,22 +108,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         if let playerEntity {
             entities.append(playerEntity)
         }
-        
+
         vignette = SKSpriteNode(imageNamed: "Vignette")
         guard let vignette else { return }
         vignette.zPosition = 1000
         vignette.name = "vignette"
-        vignette.size = size
+        vignette.size = CGSize(width: self.size.width + 100, height: self.size.height + 100)
         vignette.position = CGPoint(x: 0, y: 0)
         cameraNode.addChild(vignette)
-        
+
         // Background Music
         playBackgroundMusic()
-        
+
         // Heartbeat Audio
         setupHeartbeatAudio()
     }
-    
+
     func loadGuide() {
         let messageOverlay = GuideOverlay(
             size: CGSize(
@@ -135,14 +135,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         messageOverlay.position = CGPoint(x: 0, y: 0)
         allowMove = false
         messageOverlay.zPosition = 250
-        vignette?.addChild(messageOverlay)
+        cameraNode .addChild(messageOverlay)
         Task {
             try await Task.sleep(nanoseconds: 1000 * 1000 * 1000 * 12)
             self.allowMove = true
-            self.vignette?.removeChildren(in: [messageOverlay])
+            self.cameraNode?.removeChildren(in: [messageOverlay])
         }
     }
-    
+
     func teleportEnemy(_ pos: CGPoint) {
         if enemyComponent == nil {
             enemyComponent = EnemyCircle(size: playerSizes, pos: pos)
@@ -153,7 +153,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             enemyComponent!.node.position = pos
         }
     }
-    
+
     func randomTeleportNearPlayer() {
         let offsets = [
             (0, 1, EnemyFacingDirection.left),
@@ -163,16 +163,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         ]
         let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
         print("i: \(i), j: \(j)")
-        
+
         var validOffsets: [(Int, Int, EnemyFacingDirection)] = []
         for offset in offsets {
             if mazeMap.maze[offset.0 + i][offset.1 + j - 1] == 0 {
                 validOffsets.append(offset)
             }
         }
-        
+
         guard validOffsets.count != 0 else { return }
-        
+
         let chosenOffset = Int.random(in: 0 ..< validOffsets.count)
         let position = mazeMap.getTilePosFromIndex(
             row: i + validOffsets[chosenOffset].0,
@@ -181,13 +181,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         teleportEnemy(position)
         enemyComponent?.faceDirection(side: validOffsets[chosenOffset].2)
     }
-    
+
     func setMousePosition(atPoint pos: CGPoint?) {
         if allowMove {
             mousePosition = pos
         }
     }
-    
+
     func didBegin(_ contact: SKPhysicsContact) {
         print("Collision Happend")
 //        let playerAndWallCollided =
@@ -200,7 +200,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
          && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
         || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
             && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
-        
+
         let playerAndGuideCollided =
             (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue &&
                 contact.bodyB.categoryBitMask == PhysicsCategory.guide.rawValue) ||
@@ -211,51 +211,52 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             print("Guide Triggered")
             loadGuide()
         }
-        
+
         if playerAndEnemyCollided {
             print("You died")
             playerDied()
         }
     }
-    
+
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
         blackoutNode?.size = self.size
+        vignette?.size = CGSize(width: self.size.width + 100, height: self.size.height + 100)
     }
-    
+
     private func playerDied() {
         // Stop background music before transitioning
         stopBackgroundMusic()
-        
+
         // Stop heartbeat audio
         stopHeartbeatAudio()
-        
+
         if let view = view {
             self.camera = nil
             cameraNode.removeFromParent()
-            
+
             let deathScene = DeathScene(size: size)
             deathScene.scaleMode = .aspectFill
             deathScene.detector = self.detector
             self.cameraNode?.position = CGPoint(x: 0, y: 0)
-            
+
             // Scene Cleanup
             self.removeAllActions()
             self.removeAllChildren()
             self.physicsWorld.speed = 0
             self.isPaused = true
             entities.removeAll()
-            
+
             //            self.camera?.setScale(1.0)
             view.presentScene(deathScene)
         }
     }
-    
+
     func transitionToWinSceneWithCameraPan() {
 
         let directionx = self.playerComponent.node.position.x
         let directiony = self.playerComponent.node.position.y + 10
-        
+
         if isWinSequenceActive { return }
         isWinSequenceActive = true
         isCameraShouldFollowPlayer = true
@@ -287,7 +288,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
                 SKAction.wait(forDuration: 0.2),
                 zoomIn
             ])
-            
+
             // Transition vignette when win
             if let vignette = self.vignette {
                     let fadeOut = SKAction.fadeAlpha(to: 0.0, duration: 1.5)
@@ -306,9 +307,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         self.run(SKAction.sequence([wait, startCameraPan]))
         WinScene.playerNode = self.playerComponent.node.copy() as? SKNode
     }
-    
+
     var keysPressed = Set<UInt16>() // Use keyCodes (not characters)
-    
+
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
         print(keysPressed)
@@ -316,80 +317,80 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             randomTeleportNearPlayer()
         }
     }
-    
+
     func handleBlink() {
-        guard shouldHandleBlink else { return } 
+        guard shouldHandleBlink else { return }
         if !detector.isLeftBlink && !detector.isRightBlink {
             return
         }
-        simulateBlinkTransition()
-        
         if currentTime - lastBlinkTime < blinkCooldown {
             return
         }
-        
+
+        simulateBlinkTransition()
+
         lastBlinkTime = currentTime
-        
+
         if let enemyComponent {
             let player_pos = playerComponent.node.position
             let enemy_pos = enemyComponent.node.position
             let dx = player_pos.x - enemy_pos.x
             let dy = player_pos.y - enemy_pos.y
             let squaredDistance = CGFloat(dx * dx + dy * dy)
-            
+
             if squaredDistance <= enemyComponent.killDistance * enemyComponent.killDistance {
                 print("You Died Blinking")
                 playerDied()
                 return
             }
         }
-        
+
         randomTeleportNearPlayer()
     }
-    
+
     func simulateBlinkTransition() {
         guard let blackoutNode = blackoutNode else { return }
-        
+
         let fadeIn = SKAction.fadeAlpha(to: 1.0, duration: 0.05)
         let wait = SKAction.wait(forDuration: 0.1)
         let fadeOut = SKAction.fadeAlpha(to: 0.0, duration: 0.05)
         let sequence = SKAction.sequence([fadeIn, wait, fadeOut])
-        
+
         blackoutNode.run(sequence)
     }
-    
+
     override func keyUp(with event: NSEvent) {
         keysPressed.remove(event.keyCode)
     }
-    
+
     override func update(_ currentTime: TimeInterval) {
         if gameIsEnding { return }
 
         // Called before each frame is rendered
         self.currentTime = currentTime
-        
+
         // Initialize _lastUpdateTime if it has not already been
         if lastUpdateTime == 0 {
             lastUpdateTime = currentTime
         }
-        
+
         // Calculate time since last update
         let dt = currentTime - lastUpdateTime
-        
+
         if !isWinSequenceActive || isCameraShouldFollowPlayer {
             cameraNode.position = playerComponent.node.position
         }
-        
+
         handleKeyboardMovement()
-        
+
         if currentTime - lastBlinkCheckTime >= blinkInterval {
             handleBlink()
             lastBlinkCheckTime = currentTime
         }
-        
+
         // Update heartbeat audio based on enemy proximity
         updateHeartbeatAudio()
-        
+
         // winning condition
         let playerPos = playerComponent.node.position
         let winPos = winningTilePos
@@ -403,68 +404,68 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             randomTeleportNearPlayer()
             transitionToWinSceneWithCameraPan()
         }
-        
+
         // Update entities
         for entity in entities {
             entity.update(deltaTime: dt)
         }
-        
+
         lastUpdateTime = currentTime
     }
     func handleKeyboardMovement() {
         var dx = 0
         var dy = 0
-        
+
         if keysPressed.contains(0x00) { dx -= 1 } // A
         if keysPressed.contains(0x02) { dx += 1 } // D
         if keysPressed.contains(0x0D) { dy += 1 } // W
         if keysPressed.contains(0x01) { dy -= 1 } // S
-        
+
         if allowMove {
             playerComponent.moveDirection(x: dx, y: dy)
         }
     }
-    
+
     private func playBackgroundMusic() {
         selectRandomMusic()
         setupBackgroundMusic()
     }
-    
+
     private func selectRandomMusic() {
         currentMusicIndex = Int.random(in: 0..<backgroundMusicFiles.count)
     }
-    
+
     private func setupBackgroundMusic() {
         let musicFileName = backgroundMusicFiles[currentMusicIndex]
-        
+
         // Using NSDataAsset for audio files in Assets catalog
         guard let audioAsset = NSDataAsset(name: musicFileName) else {
             print("Could not find \(musicFileName) asset")
             return
         }
-        
+
         do {
             backgroundMusicPlayer = try AVAudioPlayer(data: audioAsset.data)
             backgroundMusicPlayer?.delegate = self
             backgroundMusicPlayer?.numberOfLoops = 0 // Play once, we'll handle the loop manually
             backgroundMusicPlayer?.volume = 0.0 // Start with volume 0 for fade in
             backgroundMusicPlayer?.play()
-            
+
             // Fade in effect
             fadeInAudio(player: backgroundMusicPlayer, targetVolume: 0.3, duration: 1.0)
         } catch {
             print("Error playing background music: \(error)")
         }
     }
-    
 
-    
+
+
     private func stopBackgroundMusic() {
         fadeOutAudio(player: backgroundMusicPlayer, duration: 1.0) {
             self.backgroundMusicPlayer = nil
         }
     }
-    
+
     // MARK: - Heartbeat Audio Management
     private func setupHeartbeatAudio() {
         // Using NSDataAsset for audio files in Assets catalog
@@ -472,7 +473,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             print("❌ Could not find audio_bpm asset")
             return
         }
-        
+
         do {
             heartbeatAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
             heartbeatAudioPlayer?.numberOfLoops = -1 // Loop indefinitely
@@ -484,36 +485,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             print("❌ Error setting up heartbeat audio: \(error)")
         }
     }
-    
+
     private func updateHeartbeatAudio() {
         guard let playerPos = playerComponent?.node.position else {
             // No player, stop heartbeat
             stopHeartbeatAudio()
             return
         }
-        
+
         guard let enemyPos = enemyComponent?.node.position else {
             // No enemy spawned yet, stop heartbeat
             stopHeartbeatAudio()
             return
         }
-        
+
         // Calculate distance between player and enemy
         let dx = playerPos.x - enemyPos.x
         let dy = playerPos.y - enemyPos.y
         let distance = sqrt(dx * dx + dy * dy)
-        
+
         if distance <= maxHeartbeatDistance {
             // Enemy is close enough to trigger heartbeat
             if !isHeartbeatPlaying {
                 startHeartbeatAudio()
             }
-            
+
             // Calculate heartbeat rate based on distance
             // Closer = faster heartbeat tempo
             let normalizedDistance = max(0.0, min(1.0, distance / maxHeartbeatDistance))
             let rate = maxHeartbeatRate - (Float(normalizedDistance) * (maxHeartbeatRate - minHeartbeatRate))
-            
+
             // Apply rate change only - volume stays at 100%
             heartbeatAudioPlayer?.rate = rate
             heartbeatAudioPlayer?.volume = 1.0 // Always 100% volume
@@ -522,25 +523,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             stopHeartbeatAudio()
         }
     }
-    
+
     private func startHeartbeatAudio() {
         guard let heartbeatPlayer = heartbeatAudioPlayer, !isHeartbeatPlaying else { return }
-        
+
         isHeartbeatPlaying = true
         heartbeatPlayer.volume = 1.0 // Always 100% volume
         heartbeatPlayer.rate = minHeartbeatRate // Start with slowest rate
         heartbeatPlayer.play()
     }
-    
+
     private func stopHeartbeatAudio() {
         guard isHeartbeatPlaying else { return }
-        
+
         isHeartbeatPlaying = false
         heartbeatAudioPlayer?.stop()
     }
-    
 
-    
+
+
     // MARK: - AVAudioPlayerDelegate
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         if flag {

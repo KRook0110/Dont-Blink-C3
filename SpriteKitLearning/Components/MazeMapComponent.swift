@@ -59,7 +59,7 @@ class MazeMapComponent: GKComponent {
     // returns the index of tiles
     func getTileIndexFromPos(_ pos: CGPoint) -> (Int, Int) {
         let offset = (
-            topLeftPos.y - pos.y,
+            topLeftPos.y - pos.y + 70,
             pos.x - topLeftPos.x
         )
         let res = (
