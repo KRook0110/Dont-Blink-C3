@@ -109,7 +109,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
             let ear = calculateEAR(points: leftEyePts)
             DispatchQueue.main.async {
                 self.leftEAR = ear
-                self.isLeftBlink = ear < 0.2
+                self.isLeftBlink = ear < 0.15
                 self.leftEyePoints = leftEyePts
             }
         }
@@ -118,7 +118,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
             let ear = calculateEAR(points: rightEyePts)
             DispatchQueue.main.async {
                 self.rightEAR = ear
-                self.isRightBlink = ear < 0.2
+                self.isRightBlink = ear < 0.15
                 self.rightEyePoints = rightEyePts
             }
         }

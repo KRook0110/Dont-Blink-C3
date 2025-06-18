@@ -73,7 +73,6 @@ class GuideOverlay: SKNode {
         if CTFontManagerRegisterGraphicsFont(cgFont, &error) {
             if let fontName = cgFont.postScriptName {
                 customFont = fontName as String
-                print("✅ Successfully loaded custom font: \(customFont!)")
             } else {
                 customFont = getSystemFontFallback()
             }

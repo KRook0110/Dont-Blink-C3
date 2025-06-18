@@ -230,7 +230,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
 
     func didBegin(_ contact: SKPhysicsContact) {
-        print("Collision Happend")
 //        let playerAndWallCollided =
 //        (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
 //         && contact.bodyB.categoryBitMask == PhysicsCategory.wall.rawValue)

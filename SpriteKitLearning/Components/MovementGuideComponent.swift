@@ -71,7 +71,6 @@ class MovementGuideComponent: GKComponent {
         if node.action(forKey: "movementGuideToggle") != nil {
             return
         }
-        print("loading Guide")
         let wait = SKAction.wait(forDuration: 3)
         let fadein = SKAction.fadeIn(withDuration: 1.0)
         let sequence = SKAction.sequence([wait, fadein])
@@ -109,7 +108,6 @@ class MovementGuideComponent: GKComponent {
         if CTFontManagerRegisterGraphicsFont(cgFont, &error) {
             if let fontName = cgFont.postScriptName {
                 customFont = fontName as String
-                print("✅ Successfully loaded custom font: \(customFont!)")
             } else {
                 customFont = getSystemFontFallback()
             }
