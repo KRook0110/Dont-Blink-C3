@@ -7,13 +7,14 @@ struct FontHelper {
         let tempDir = FileManager.default.temporaryDirectory
         let fontURL = tempDir.appendingPathComponent(tempFileName)
 
-        // Selalu tulis ulang file font ke temp
-        if let fontAsset = NSDataAsset(name: assetName) {
-            do {
-                try fontAsset.data.write(to: fontURL)
-            } catch {
-                print("❌ Failed to write font data to temp file: \(error)")
-                return "Menlo-Bold"
+        // Tulis file font ke temp jika belum ada
+        if !FileManager.default.fileExists(atPath: fontURL.path) {
+            if let fontAsset = NSDataAsset(name: assetName) {
+                do {
+                    try fontAsset.data.write(to: fontURL)
+                } catch {
+                    return "Menlo-Bold"
+                }
             }
         }
 
@@ -29,7 +30,6 @@ struct FontHelper {
                 }
             }
         }
-        print("⚠️ Font name not found, using fallback")
         return "Menlo-Bold"
     }
 } 
