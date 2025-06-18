@@ -1,10 +1,3 @@
-//
-//  GameScene.swift
-//  SpriteKitLearning
-//
-//  Created by Shawn Andrew on 09/06/25.
-//
-
 import GameplayKit
 import SpriteKit
 import AVFoundation
@@ -16,13 +9,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     var graphs = [String: GKGraph]()
     var playerEntity: GKEntity?
     private var playerComponent: PlayerComponent!
-    // private var floorComponent: FloorComponent!
     private var cameraNode: SKCameraNode!
     private var mazeMap: MazeMapComponent!
     private var mazeMapEntity: GKEntity!
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
     private var vigenette: SKSpriteNode?
+    private var shouldHandleBlink = true 
     
     // Background Music Properties
     private var backgroundMusicPlayer: AVAudioPlayer?
@@ -49,20 +42,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var mousePosition: CGPoint? = nil
     private var allowMove = true
     private var mouseIsPressed = false
-    //<<<<<<< HEAD
-    
-    //=======
-    
     
     private var blackoutNode: SKSpriteNode?
     
-    var winningTileIndex: (row: Int, col: Int) = (4, 13)
-    //        var winningTileIndex: (row: Int, col: Int) = (13, 13)
+    var winningTileIndex: (row: Int, col: Int) = (9, 13)
     
     var winningTilePos: CGPoint {
         mazeMap.getTilePosFromIndex(row: winningTileIndex.row, col: winningTileIndex.col)
     }
+    var gameIsEnding = false
+    var isWinSequenceActive = false
+    var isPLayerAutoMoving = false
+    var isCameraShouldFollowPlayer = false
     
+    private var lastDirectionKey: WalkDirection?
     var detector: EyeBlinkDetector
     
     init(size: CGSize, detector: EyeBlinkDetector) {
@@ -80,15 +73,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         
         physicsWorld.contactDelegate = self
         
-        // Camera
         cameraNode = SKCameraNode()
-        //<<<<<<< HEAD
         camera = cameraNode
         camera?.setScale(CGFloat(3.0))
         addChild(cameraNode)
-        //=======
-        //        self.camera = cameraNode
-        //        self.addChild(cameraNode)
         
         // Blink Animation
         let blackout = SKSpriteNode(color: .black, size: self.size)
@@ -109,7 +97,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
         
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 13, col: 14)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 12, col: 13)
         playerComponent = PlayerComponent(
             size: playerSizes,
             pos: spawnPoint
@@ -124,8 +112,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         vigenette = SKSpriteNode(imageNamed: "Vigenette")
         guard let vigenette else { return }
         vigenette.zPosition = 1000
-        // vigenette.blendMode = .alpha
-        // vigenette.alpha = 0.5
         vigenette.name = "vigenette"
         vigenette.size = size
         vigenette.position = CGPoint(x: 0, y: 0)
@@ -149,27 +135,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
     }
     
-    //    func randomTeleportNearPlayer() {
-    //        let offsets = [(0, 1), (1, 0), (-1, 0), (0, -1)]
-    //        let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
-    //        print("i: \(i), j: \(j)")
-    //
-    //        var validOffsets: [(Int, Int)] = []
-    //        for offset in offsets {
-    //            if mazeMap.maze[offset.0 + i][offset.1 + j - 1] == 0 {
-    //                validOffsets.append(offset)
-    //            }
-    //        }
-    //
-    //        guard validOffsets.count != 0 else { return }
-    //
-    //        let chosenOffset = Int.random(in: 0 ..< validOffsets.count)
-    //        let position = mazeMap.getTilePosFromIndex(
-    //            row: i + validOffsets[chosenOffset].0,
-    //            col: j + validOffsets[chosenOffset].1
-    //        )
-    //        teleportEnemy(position)
-    //    }
     func randomTeleportNearPlayer() {
         let offsets = [
             (0, 1, EnemyFacingDirection.left),
@@ -200,37 +165,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     
     func setMousePosition(atPoint pos: CGPoint?) {
         if allowMove {
-            // print(pos)
             mousePosition = pos
         }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
         print("Collision Happend")
-        let playerAndWallCollided =
-        (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
-         && contact.bodyB.categoryBitMask == PhysicsCategory.wall.rawValue)
-        || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
-            && contact.bodyA.categoryBitMask == PhysicsCategory.wall.rawValue)
+//        let playerAndWallCollided =
+//        (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
+//         && contact.bodyB.categoryBitMask == PhysicsCategory.wall.rawValue)
+//        || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
+//            && contact.bodyA.categoryBitMask == PhysicsCategory.wall.rawValue)
         let playerAndEnemyCollided =
         (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
          && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
         || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
             && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
         
-        if playerAndWallCollided {
-            // allowMove = false
-            // Task {
-            //     try await Task.sleep(nanoseconds: 1000 * 1000 * 1000)
-            //     allowMove = true
-            //     print("allowMove true")
-            // }
-        }
         if playerAndEnemyCollided {
             print("You died")
             playerDied()
-            
-            
         }
     }
     
@@ -267,6 +221,55 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
     }
     
+    func transitionToWinSceneWithCameraPan() {
+
+        let directionx = self.playerComponent.node.position.x
+        let directiony = self.playerComponent.node.position.y + 10
+        
+        if isWinSequenceActive { return }
+        isWinSequenceActive = true
+        isCameraShouldFollowPlayer = true
+        allowMove = false
+        keysPressed.removeAll()
+        mousePosition = CGPoint(x: directionx, y: directiony)
+
+        // After player moves up, start camera pan
+        let wait = SKAction.wait(forDuration: 1.0)
+        let startCameraPan = SKAction.run { [weak self] in
+            guard let self = self, let camera = self.camera else { return }
+
+            // Stop camera following the player during camera pan
+            self.isCameraShouldFollowPlayer = false
+
+            let panUp = SKAction.moveBy(x: 0, y: 200, duration: 1.8)
+            panUp.timingMode = .easeIn
+
+            // Zoom in (smaller scale = zoom in)
+            let zoomIn = SKAction.group([
+                SKAction.scaleX(to: 1.0, duration: 1.0),
+                SKAction.scaleY(to: 1.0, duration: 1.0)
+            ])
+            zoomIn.timingMode = .easeInEaseOut
+
+            // Combine pan + zoom
+            let panAndZoom = SKAction.sequence([
+                panUp,
+                SKAction.wait(forDuration: 0.2),
+                zoomIn
+            ])
+
+            // Run camera pan and zoom
+            camera.run(panAndZoom) {
+                let winScene = WinScene(size: self.size)
+                winScene.scaleMode = .aspectFill
+                self.view?.presentScene(winScene)
+            }
+        }
+
+        self.run(SKAction.sequence([wait, startCameraPan]))
+        WinScene.playerNode = self.playerComponent.node.copy() as? SKNode
+    }
+    
     var keysPressed = Set<UInt16>() // Use keyCodes (not characters)
     
     override func keyDown(with event: NSEvent) {
@@ -278,6 +281,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
     
     func handleBlink() {
+        guard shouldHandleBlink else { return } 
         if !detector.isLeftBlink && !detector.isRightBlink {
             return
         }
@@ -322,6 +326,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        if gameIsEnding { return }
+
         // Called before each frame is rendered
         self.currentTime = currentTime
         
@@ -333,13 +339,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         // Calculate time since last update
         let dt = currentTime - lastUpdateTime
         
-        // move camera position to player position
-        
-        if let cameraNode {
-            // move camera position to player position
-            if let player = playerComponent?.node {
-                cameraNode.position = player.position
-            }
+        if !isWinSequenceActive || isCameraShouldFollowPlayer {
+            cameraNode.position = playerComponent.node.position
         }
         
         handleKeyboardMovement()
@@ -355,21 +356,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         // winning condition
         let playerPos = playerComponent.node.position
         let winPos = winningTilePos
-        
-        let dx = playerPos.x - winPos.x
-        let dy = playerPos.y - winPos.y
-        let squaredDistance =  dx * dx + dy * dy
-        
-        if squaredDistance < 20 * 20 {
-            // Stop background music before transitioning
-            stopBackgroundMusic()
-            
-            // Stop heartbeat audio
-            stopHeartbeatAudio()
-            
-            let winScene = WinScene(size: size)
-            winScene.scaleMode = .aspectFill
-            view?.presentScene(winScene, transition: .flipVertical(withDuration: 1.0))
+
+        let distance = hypot(playerPos.x - winPos.x, playerPos.y - winPos.y)
+
+        if distance < 30 {
+            self.playerComponent.node.physicsBody?.velocity = .zero
+            self.playerComponent.moveWithoutCollision(mousePosition, duration: 5.0)
+            vigenette?.alpha = 0.0
+            self.shouldHandleBlink = false
+            randomTeleportNearPlayer()
+            transitionToWinSceneWithCameraPan()
         }
         
         // Update entities
