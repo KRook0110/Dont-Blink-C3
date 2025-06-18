@@ -1,5 +1,6 @@
 import SpriteKit
 import CoreText
+import AVFoundation
 
 class GuideOverlay: SKNode {
     private let backgroundOverlay: SKShapeNode
@@ -19,6 +20,7 @@ class GuideOverlay: SKNode {
     private var currentCharIndex = 0
     private var typingSpeed: TimeInterval = 0.05
     private var customFont: String?
+    private var talkAudioPlayer: AVAudioPlayer?
 
     init(size: CGSize) {
         backgroundOverlay = SKShapeNode(rectOf: size)
@@ -117,6 +119,20 @@ class GuideOverlay: SKNode {
         typeNextCharacter()
     }
 
+    private func playTalkAudio() {
+        guard let audioAsset = NSDataAsset(name: "audio_talk") else {
+            print("❌ Could not find audio_talk asset")
+            return
+        }
+        do {
+            talkAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
+            talkAudioPlayer?.prepareToPlay()
+            talkAudioPlayer?.play()
+        } catch {
+            print("❌ Error playing audio_talk: \(error)")
+        }
+    }
+
     private func typeNextCharacter() {
         guard currentLineIndex < fullLines.count else {
             run(.wait(forDuration: 1.5)) { [weak self] in
@@ -131,8 +147,19 @@ class GuideOverlay: SKNode {
             let index = line.index(line.startIndex, offsetBy: currentCharIndex)
             let partialText = String(line.prefix(upTo: index))
             labels[currentLineIndex].text = partialText
-            currentCharIndex += 1
 
+            // Play audio if just finished a word (currentCharIndex > 0, and previous char is not space, and current is space or end)
+            if currentCharIndex > 0 {
+                let prevIndex = line.index(line.startIndex, offsetBy: currentCharIndex - 1)
+                let isEnd = currentCharIndex == line.count
+                let isSpace = !isEnd && line[prevIndex] != " " && line[index] == " "
+                let isLastChar = isEnd && line[prevIndex] != " "
+                if isSpace || isLastChar {
+                    playTalkAudio()
+                }
+            }
+
+            currentCharIndex += 1
             run(.wait(forDuration: typingSpeed)) { [weak self] in
                 self?.typeNextCharacter()
             }
