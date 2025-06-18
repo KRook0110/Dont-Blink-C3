@@ -8,6 +8,8 @@ enum pathNode: Int {
     case vWall = 3
     case vWallCorner = 4
     case hWall = 5
+    case guideTv = 6
+    case safeTile = 7
 }
 
 class TileComponent: GKComponent {
@@ -79,6 +81,45 @@ class TileComponent: GKComponent {
             self.node.lineWidth = 0
             pbody.categoryBitMask = PhysicsCategory.wall.rawValue
             self.node.physicsBody = pbody
+        }else if pathNode == 6 {
+            
+            // generate the floor
+            let texture = SKTexture(imageNamed: "Tiles")
+            node.fillTexture = texture
+            node.fillColor = .white
+            node.lineWidth = 0
+            
+            let pbody = SKPhysicsBody(circleOfRadius: 5)
+            
+            
+            let guideTvHeightScale = CGFloat(1.4559)
+            pbody.categoryBitMask = PhysicsCategory.guide.rawValue
+            pbody.collisionBitMask = PhysicsCategory.player.rawValue
+            pbody.contactTestBitMask = PhysicsCategory.player.rawValue
+            pbody.affectedByGravity = false
+            pbody.allowsRotation = false
+            pbody.isDynamic = false
+            node.physicsBody = pbody
+            
+            let guideTv = SKSpriteNode(imageNamed: "GuideTV")
+            guideTv.size = CGSize(
+                width: 0.9 * size.width,
+                height: 0.9 * size.height * guideTvHeightScale
+            )
+            guideTv.position = CGPoint(
+                x: 0,
+                y: 40
+            )
+            
+            node.addChild(guideTv)
+
+            
+        }
+        else if pathNode == 7 {
+            let texture = SKTexture(imageNamed: "Tiles")
+            self.node.fillTexture = texture
+            self.node.fillColor = .white
+            self.node.lineWidth = 0
         }
 
         super.init()

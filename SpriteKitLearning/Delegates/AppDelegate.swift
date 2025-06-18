@@ -1,11 +1,3 @@
-//
-//  AppDelegate.swift
-//  SpriteKitLearning
-//
-//  Created by Shawn Andrew on 09/06/25.
-//
-
-
 import Cocoa
 
 @main

@@ -14,7 +14,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var mazeMapEntity: GKEntity!
     private var enemyComponent: EnemyCircle?
     private var enemyEntity: GKEntity?
-    private var vigenette: SKSpriteNode?
+    private var vignette: SKSpriteNode?
     private var shouldHandleBlink = true 
     
     // Background Music Properties
@@ -26,8 +26,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var heartbeatAudioPlayer: AVAudioPlayer?
     private var isHeartbeatPlaying = false
     private let maxHeartbeatDistance: CGFloat = 550.0 // Maximum distance to hear heartbeat
-    private let minHeartbeatRate: Float = 0.5 // Slowest heartbeat rate
-    private let maxHeartbeatRate: Float = 2.0 // Fastest heartbeat rate
+    private let minHeartbeatRate: Float = 1.0 // Slowest heartbeat rate
+    private let maxHeartbeatRate: Float = 3.0 // Fastest heartbeat rate
     
     private var lastBlinkCheckTime: TimeInterval = 0
     private let blinkInterval: TimeInterval = 0.1
@@ -97,7 +97,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
         
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 12, col: 13)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 19, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
             pos: spawnPoint
@@ -109,19 +109,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             entities.append(playerEntity)
         }
         
-        vigenette = SKSpriteNode(imageNamed: "Vigenette")
-        guard let vigenette else { return }
-        vigenette.zPosition = 1000
-        vigenette.name = "vigenette"
-        vigenette.size = size
-        vigenette.position = CGPoint(x: 0, y: 0)
-        cameraNode.addChild(vigenette)
+        vignette = SKSpriteNode(imageNamed: "Vignette")
+        guard let vignette else { return }
+        vignette.zPosition = 1000
+        vignette.name = "vignette"
+        vignette.size = size
+        vignette.position = CGPoint(x: 0, y: 0)
+        cameraNode.addChild(vignette)
         
         // Background Music
         playBackgroundMusic()
         
         // Heartbeat Audio
         setupHeartbeatAudio()
+    }
+    
+    func loadGuide() {
+        let messageOverlay = GuideOverlay(
+            size: CGSize(
+                width: size.width,
+                height: size.height,
+            )
+        )
+        // messageOverlay.position = CGPoint(x: frame.midX, y: frame.midY)
+        messageOverlay.position = CGPoint(x: 0, y: 0)
+        allowMove = false
+        messageOverlay.zPosition = 250
+        vignette?.addChild(messageOverlay)
+        Task {
+            try await Task.sleep(nanoseconds: 1000 * 1000 * 1000 * 12)
+            self.allowMove = true
+            self.vignette?.removeChildren(in: [messageOverlay])
+        }
     }
     
     func teleportEnemy(_ pos: CGPoint) {
@@ -181,6 +200,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
          && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
         || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
             && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
+        
+        let playerAndGuideCollided =
+            (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue &&
+                contact.bodyB.categoryBitMask == PhysicsCategory.guide.rawValue) ||
+            (contact.bodyA.categoryBitMask == PhysicsCategory.guide.rawValue &&
+                contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue)
+
+        if playerAndGuideCollided {
+            print("Guide Triggered")
+            loadGuide()
+        }
         
         if playerAndEnemyCollided {
             print("You died")
@@ -257,6 +287,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
                 SKAction.wait(forDuration: 0.2),
                 zoomIn
             ])
+            
+            // Transition vignette when win
+            if let vignette = self.vignette {
+                    let fadeOut = SKAction.fadeAlpha(to: 0.0, duration: 1.5)
+                    fadeOut.timingMode = .easeInEaseOut
+                    vignette.run(fadeOut)
+                }
 
             // Run camera pan and zoom
             camera.run(panAndZoom) {
@@ -362,7 +399,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         if distance < 30 {
             self.playerComponent.node.physicsBody?.velocity = .zero
             self.playerComponent.moveWithoutCollision(mousePosition, duration: 5.0)
-            vigenette?.alpha = 0.0
             self.shouldHandleBlink = false
             randomTeleportNearPlayer()
             transitionToWinSceneWithCameraPan()
