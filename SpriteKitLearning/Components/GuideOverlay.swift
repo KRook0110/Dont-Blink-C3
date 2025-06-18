@@ -8,7 +8,7 @@ class GuideOverlay: SKNode {
     private var labels: [SKLabelNode] = []
 
     private let messages: [String] = [
-        "THEY’RE WATCHING. WAITING. SILENT.",
+        "THEY'RE WATCHING. WAITING. SILENT.",
         "THEY ONLY MOVE WHEN YOU BLINK.",
         "CAN YOU FIND THE WAY OUT\nBEFORE THEY FIND YOU?"
     ]
@@ -48,43 +48,52 @@ class GuideOverlay: SKNode {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: - Font Loading
     private func loadCustomFont() {
-        // Try to load font from Assets.xcassets
-        guard let fontAsset = NSDataAsset(name: "UpheavalTT") else {
-            print("❌ Failed to load UpheavalTT font asset")
-            customFont = getSystemFontFallback()
-            return
-        }
+        let tempDir = FileManager.default.temporaryDirectory
+        let fontURL = tempDir.appendingPathComponent("UpheavalTT.ttf")
+        let fontAlreadyExists = FileManager.default.fileExists(atPath: fontURL.path)
 
-        guard let provider = CGDataProvider(data: fontAsset.data as CFData) else {
-            print("❌ Failed to create CGDataProvider for font")
-            customFont = getSystemFontFallback()
-            return
-        }
-
-        guard let cgFont = CGFont(provider) else {
-            print("❌ Failed to create CGFont")
-            customFont = getSystemFontFallback()
-            return
+        if !fontAlreadyExists {
+            guard let fontAsset = NSDataAsset(name: "UpheavalTT") else {
+                print("❌ Failed to load UpheavalTT font asset")
+                customFont = getSystemFontFallback()
+                return
+            }
+            do {
+                try fontAsset.data.write(to: fontURL)
+            } catch {
+                print("❌ Failed to write font data to temp file: \(error)")
+                customFont = getSystemFontFallback()
+                return
+            }
         }
 
         var error: Unmanaged<CFError>?
-        if CTFontManagerRegisterGraphicsFont(cgFont, &error) {
-            if let fontName = cgFont.postScriptName {
-                customFont = fontName as String
+        if !fontAlreadyExists {
+            if CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error) {
             } else {
-                customFont = getSystemFontFallback()
+                if let error = error?.takeUnretainedValue() {
+                    print("❌ Failed to register font: \(error)")
+                }
             }
-        } else {
-            print("❌ Failed to register font")
+        }
+
+        if let descriptors = CTFontManagerCreateFontDescriptorsFromURL(fontURL as CFURL) as? [CTFontDescriptor] {
+            for desc in descriptors {
+                if let fontName = CTFontDescriptorCopyAttribute(desc, kCTFontNameAttribute) as? String {
+                    customFont = fontName
+                    break
+                }
+            }
+        }
+        if customFont == nil {
             customFont = getSystemFontFallback()
         }
     }
 
     private func getSystemFontFallback() -> String {
         // Return a system font that looks good for this purpose
-        return "Menlo-Bold" // Monospace font that looks retro/gaming
+        return "Menlo-Bold"
     }
 
     private func getFontName() -> String {
@@ -131,7 +140,8 @@ class GuideOverlay: SKNode {
         let spacing: CGFloat = 30
         let totalHeight = spacing * CGFloat(fullLines.count - 1)
         for (i, _) in fullLines.enumerated() {
-            let label = SKLabelNode(fontNamed: getFontName())
+            let fontName = getFontName()
+            let label = SKLabelNode(fontNamed: fontName)
             label.fontSize = 20
             label.fontColor = .white
             label.horizontalAlignmentMode = .center

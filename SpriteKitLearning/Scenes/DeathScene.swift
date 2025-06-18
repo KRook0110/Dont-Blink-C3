@@ -150,8 +150,6 @@ class DeathScene: SKScene {
 
             case 36: // Return key
                 if selectedIndex == 0 {
-                    // Home
-                    print("Go to Home Scene")
                     // Stop all audio before transitioning
                     stopAllAudio()
                     let menuScene = MenuScene(size: self.size)
@@ -159,8 +157,6 @@ class DeathScene: SKScene {
                     menuScene.detector = self.detector
                     view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
                 } else {
-                    // Replay
-                    print("Replay Game")
                     // Stop all audio before transitioning
                     stopAllAudio()
                     let gameScene = GameScene(size: self.size, detector: self.detector)
