@@ -55,28 +55,11 @@ class GuideOverlay: SKNode {
     }
 
     private func getSystemFontFallback() -> String {
-        // Return a system font that looks good for this purpose
         return "Menlo-Bold"
     }
 
     private func getFontName() -> String {
         return customFont ?? getSystemFontFallback()
-    }
-
-    // MARK: - Debug Helper
-    private func printAvailableFonts() {
-        print("🔍 Available fonts:")
-        for family in NSFontManager.shared.availableFontFamilies {
-            print("Font family: \(family)")
-            let fonts = NSFontManager.shared.availableMembers(ofFontFamily: family)
-            if let fonts = fonts {
-                for font in fonts {
-                    if let fontName = font[0] as? String {
-                        print("  - \(fontName)")
-                    }
-                }
-            }
-        }
     }
 
     private func fadeInAndStartMessage() {
