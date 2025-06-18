@@ -124,7 +124,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
 
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 12, col: 14)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 19, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
             pos: spawnPoint
