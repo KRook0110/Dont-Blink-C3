@@ -82,17 +82,15 @@ class TileComponent: GKComponent {
             pbody.categoryBitMask = PhysicsCategory.wall.rawValue
             self.node.physicsBody = pbody
         }else if pathNode == 6 {
-            
+
             // generate the floor
             let texture = SKTexture(imageNamed: "Tiles")
             node.fillTexture = texture
             node.fillColor = .white
             node.lineWidth = 0
-            
-            let pbody = SKPhysicsBody(circleOfRadius: 5)
-            
-            
-            let guideTvHeightScale = CGFloat(1.4559)
+
+            let pbody = SKPhysicsBody(circleOfRadius: 20, center:CGPoint(x: 0, y: -70))
+
             pbody.categoryBitMask = PhysicsCategory.guide.rawValue
             pbody.collisionBitMask = PhysicsCategory.player.rawValue
             pbody.contactTestBitMask = PhysicsCategory.player.rawValue
@@ -100,7 +98,9 @@ class TileComponent: GKComponent {
             pbody.allowsRotation = false
             pbody.isDynamic = false
             node.physicsBody = pbody
-            
+
+
+            let guideTvHeightScale = CGFloat(1.4559)
             let guideTv = SKSpriteNode(imageNamed: "GuideTV")
             guideTv.size = CGSize(
                 width: 0.9 * size.width,
@@ -110,10 +110,23 @@ class TileComponent: GKComponent {
                 x: 0,
                 y: 40
             )
-            
+
+            let collisionNode = SKNode()
+            collisionNode.position = CGPoint(x: 0, y: 0)
+            let collisionpbody = SKPhysicsBody(rectangleOf: CGSize(width: 150, height: 100))
+            collisionpbody.categoryBitMask = PhysicsCategory.wall.rawValue
+            collisionpbody.collisionBitMask = PhysicsCategory.player.rawValue
+            collisionpbody.contactTestBitMask = PhysicsCategory.player.rawValue
+            collisionpbody.affectedByGravity = false
+            collisionpbody.allowsRotation = false
+            collisionpbody.isDynamic = false
+            collisionNode.physicsBody = collisionpbody
+
+            guideTv.addChild(collisionNode)
             node.addChild(guideTv)
 
-            
+
+
         }
         else if pathNode == 7 {
             let texture = SKTexture(imageNamed: "Tiles")

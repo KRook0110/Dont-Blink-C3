@@ -89,7 +89,7 @@ class DeathScene: SKScene {
 
         do {
             jumpscareAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
-            jumpscareAudioPlayer?.volume = 0.1
+            jumpscareAudioPlayer?.volume = 0.3
             jumpscareAudioPlayer?.play()
         } catch {
             print("Error playing jumpscare audio: \(error)")
@@ -139,15 +139,15 @@ class DeathScene: SKScene {
             case 48: // Tab key
                 selectedIndex = (selectedIndex + 1) % 2
                 updateSelection()
-                
+
             case 124: // Right Arrow
                 selectedIndex = (selectedIndex + 1) % 2
                 updateSelection()
-                
+
             case 123: // Left Arrow
                 selectedIndex = (selectedIndex - 1) % 2
                 updateSelection()
-                
+
             case 36: // Return key
                 if selectedIndex == 0 {
                     // Home
@@ -173,32 +173,32 @@ class DeathScene: SKScene {
                 break
             }
         }
-    
+
 //    override func mouseDown(with event: NSEvent) {
 //        let location = event.location(in: self)
 //        let node = self.atPoint(location)
-//        
+//
 //        if node.name == "homeButton" || node == homeButton {
 //            // Stop all audio before transitioning
 //            stopAllAudio()
-//            
+//
 //            print("Go to Home Scene")
 //            let menuScene = MenuScene(size: self.size)
 //            menuScene.scaleMode = .aspectFill
 //            menuScene.detector = self.detector
 //            view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
-//            
+//
 //        } else if node.name == "replayButton" || node == replayButton {
 //            // Stop all audio before transitioning
 //            stopAllAudio()
-//            
+//
 //            print("Replay Game")
 //            let gameScene = GameScene(size: self.size, detector: self.detector)
 //            gameScene.scaleMode = .aspectFill
 //            view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
 //        }
 //    }
-    
+
     private func updateSelection() {
         if selectedIndex == 0 {
             // Home selected
