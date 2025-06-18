@@ -167,7 +167,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         let messageOverlay = GuideOverlay(
             size: CGSize(
                 width: size.width,
-                height: size.height,
+                height: size.height
             )
         )
         // messageOverlay.position = CGPoint(x: frame.midX, y: frame.midY)
