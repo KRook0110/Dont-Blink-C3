@@ -1,4 +1,5 @@
 import SpriteKit
+import CoreText
 
 class GuideOverlay: SKNode {
     private let backgroundOverlay: SKShapeNode
@@ -17,6 +18,7 @@ class GuideOverlay: SKNode {
     private var currentLineIndex = 0
     private var currentCharIndex = 0
     private var typingSpeed: TimeInterval = 0.05
+    private var customFont: String?
 
     init(size: CGSize) {
         backgroundOverlay = SKShapeNode(rectOf: size)
@@ -33,6 +35,9 @@ class GuideOverlay: SKNode {
         super.init()
         addChild(backgroundOverlay)
         addChild(backgroundBox)
+        
+        // Load custom font
+        loadCustomFont()
 
         run(.wait(forDuration: 0.2)) { [weak self] in
                     self?.fadeInAndStartMessage()
@@ -41,6 +46,66 @@ class GuideOverlay: SKNode {
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - Font Loading
+    private func loadCustomFont() {
+        // Try to load font from Assets.xcassets
+        guard let fontAsset = NSDataAsset(name: "UpheavalTT") else {
+            print("❌ Failed to load UpheavalTT font asset")
+            customFont = getSystemFontFallback()
+            return
+        }
+        
+        guard let provider = CGDataProvider(data: fontAsset.data as CFData) else {
+            print("❌ Failed to create CGDataProvider for font")
+            customFont = getSystemFontFallback()
+            return
+        }
+        
+        guard let cgFont = CGFont(provider) else {
+            print("❌ Failed to create CGFont")
+            customFont = getSystemFontFallback()
+            return
+        }
+        
+        var error: Unmanaged<CFError>?
+        if CTFontManagerRegisterGraphicsFont(cgFont, &error) {
+            if let fontName = cgFont.postScriptName {
+                customFont = fontName as String
+                print("✅ Successfully loaded custom font: \(customFont!)")
+            } else {
+                customFont = getSystemFontFallback()
+            }
+        } else {
+            print("❌ Failed to register font")
+            customFont = getSystemFontFallback()
+        }
+    }
+    
+    private func getSystemFontFallback() -> String {
+        // Return a system font that looks good for this purpose
+        return "Menlo-Bold" // Monospace font that looks retro/gaming
+    }
+    
+    private func getFontName() -> String {
+        return customFont ?? getSystemFontFallback()
+    }
+    
+    // MARK: - Debug Helper
+    private func printAvailableFonts() {
+        print("🔍 Available fonts:")
+        for family in NSFontManager.shared.availableFontFamilies {
+            print("Font family: \(family)")
+            let fonts = NSFontManager.shared.availableMembers(ofFontFamily: family)
+            if let fonts = fonts {
+                for font in fonts {
+                    if let fontName = font[0] as? String {
+                        print("  - \(fontName)")
+                    }
+                }
+            }
+        }
     }
 
     private func fadeInAndStartMessage() {
@@ -67,7 +132,7 @@ class GuideOverlay: SKNode {
         let spacing: CGFloat = 30
         let totalHeight = spacing * CGFloat(fullLines.count - 1)
         for (i, _) in fullLines.enumerated() {
-            let label = SKLabelNode(fontNamed: "Upheaval-TT")
+            let label = SKLabelNode(fontNamed: getFontName())
             label.fontSize = 20
             label.fontColor = .white
             label.horizontalAlignmentMode = .center

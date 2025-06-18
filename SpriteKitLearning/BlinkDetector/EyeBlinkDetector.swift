@@ -19,6 +19,9 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     @Published var faceCount: Int = 0
     @Published var selectedFaceArea: CGFloat = 0.0
     
+    // Buat pause
+    @Published var isFaceDetected: Bool = true
+    
     override init() {
         super.init()
         setupCamera()
@@ -47,6 +50,8 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
                     self?.landmarks = []
                     self?.leftEyePoints = []
                     self?.rightEyePoints = []
+                    
+                    self?.isFaceDetected = false
                 }
                 return
             }
@@ -65,6 +70,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
             guard !validFaces.isEmpty else {
                 DispatchQueue.main.async {
                     self?.selectedFaceArea = 0.0
+                    self?.isFaceDetected = false
                 }
                 return
             }
@@ -82,6 +88,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
             let selectedArea = selectedFace.boundingBox.width * selectedFace.boundingBox.height
             DispatchQueue.main.async {
                 self?.selectedFaceArea = selectedArea
+                self?.isFaceDetected = true
             }
             
             self?.processFace(selectedFace)

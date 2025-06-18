@@ -57,11 +57,11 @@ class DeathScene: SKScene {
                 self.replayButton.name = "replayButton"
                 self.replayButton.zPosition = 12
                 self.replayButton.position = CGPoint(x: self.size.width * 0.75, y: self.size.height * 0.3)
-                self.replayButton.size = CGSize(width: 80, height: 30)
+                self.replayButton.size = CGSize(width: 95, height: 30)
                 self.addChild(self.replayButton)
 
                 self.arrowNode = SKSpriteNode(imageNamed: "arrow")
-                self.arrowNode.size = CGSize(width: 25, height: 25)
+                self.arrowNode.size = CGSize(width: 22, height: 30)
                 self.arrowNode.zPosition = 10
                 self.arrowNode.position = CGPoint(x: self.homeButton.position.x - 60, y: self.homeButton.position.y)
                 self.arrowNode.name = "arrow"
@@ -139,14 +139,21 @@ class DeathScene: SKScene {
             case 48: // Tab key
                 selectedIndex = (selectedIndex + 1) % 2
                 updateSelection()
-
+                
+            case 124: // Right Arrow
+                selectedIndex = (selectedIndex + 1) % 2
+                updateSelection()
+                
+            case 123: // Left Arrow
+                selectedIndex = (selectedIndex - 1) % 2
+                updateSelection()
+                
             case 36: // Return key
-                // Stop all audio before transitioning
-                stopAllAudio()
-
                 if selectedIndex == 0 {
                     // Home
                     print("Go to Home Scene")
+                    // Stop all audio before transitioning
+                    stopAllAudio()
                     let menuScene = MenuScene(size: self.size)
                     menuScene.scaleMode = .aspectFill
                     menuScene.detector = self.detector
@@ -154,41 +161,44 @@ class DeathScene: SKScene {
                 } else {
                     // Replay
                     print("Replay Game")
+                    // Stop all audio before transitioning
+                    stopAllAudio()
                     let gameScene = GameScene(size: self.size, detector: self.detector)
                     gameScene.scaleMode = .aspectFill
                     view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
+
                 }
 
             default:
                 break
             }
         }
-
-    override func mouseDown(with event: NSEvent) {
-        let location = event.location(in: self)
-        let node = self.atPoint(location)
-
-        if node.name == "homeButton" || node == homeButton {
-            // Stop all audio before transitioning
-            stopAllAudio()
-
-            print("Go to Home Scene")
-            let menuScene = MenuScene(size: self.size)
-            menuScene.scaleMode = .aspectFill
-            menuScene.detector = self.detector
-            view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
-
-        } else if node.name == "replayButton" || node == replayButton {
-            // Stop all audio before transitioning
-            stopAllAudio()
-
-            print("Replay Game")
-            let gameScene = GameScene(size: self.size, detector: self.detector)
-            gameScene.scaleMode = .aspectFill
-            view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
-        }
-    }
-
+    
+//    override func mouseDown(with event: NSEvent) {
+//        let location = event.location(in: self)
+//        let node = self.atPoint(location)
+//        
+//        if node.name == "homeButton" || node == homeButton {
+//            // Stop all audio before transitioning
+//            stopAllAudio()
+//            
+//            print("Go to Home Scene")
+//            let menuScene = MenuScene(size: self.size)
+//            menuScene.scaleMode = .aspectFill
+//            menuScene.detector = self.detector
+//            view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
+//            
+//        } else if node.name == "replayButton" || node == replayButton {
+//            // Stop all audio before transitioning
+//            stopAllAudio()
+//            
+//            print("Replay Game")
+//            let gameScene = GameScene(size: self.size, detector: self.detector)
+//            gameScene.scaleMode = .aspectFill
+//            view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
+//        }
+//    }
+    
     private func updateSelection() {
         if selectedIndex == 0 {
             // Home selected
@@ -199,7 +209,7 @@ class DeathScene: SKScene {
             // Replay selected
             homeButton.texture = SKTexture(imageNamed: "redHome")
             replayButton.texture = SKTexture(imageNamed: "whiteReplay")
-            arrowNode.position = CGPoint(x: replayButton.position.x - 60, y: replayButton.position.y)
+            arrowNode.position = CGPoint(x: replayButton.position.x - 70, y: replayButton.position.y)
         }
     }
 }
