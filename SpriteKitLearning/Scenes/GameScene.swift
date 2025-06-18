@@ -1,6 +1,7 @@
 import GameplayKit
 import SpriteKit
 import AVFoundation
+import Combine
 
 class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private let playerSizes = CGSize(width: 120, height: 120)
@@ -43,6 +44,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var allowMove = true
     private var mouseIsPressed = false
     
+    private var detectorCancellable: AnyCancellable?
+    private var pauseOverlay: PauseOverlay?
+    
     private var blackoutNode: SKSpriteNode?
     
     var winningTileIndex: (row: Int, col: Int) = (9, 13)
@@ -78,6 +82,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         camera?.setScale(CGFloat(3.0))
         addChild(cameraNode)
         
+        // Pause Overlay
+        pauseOverlay = PauseOverlay(size: self.size)
+        if let overlay = pauseOverlay {
+            overlay.zPosition = 1000
+            overlay.isHidden = true // initially hidden
+            cameraNode.addChild(overlay)
+        }
+        
+        // Game Pause
+        detectorCancellable = detector.$isFaceDetected
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] faceDetected in
+                guard let self = self else { return }
+                self.isPaused = !faceDetected
+                if !faceDetected {
+                    self.isPaused = true
+                    pauseOverlay?.isHidden = false
+                    
+                } else {
+                    self.isPaused = false
+                    pauseOverlay?.isHidden = true
+                }
+            }
+        
         // Blink Animation
         let blackout = SKSpriteNode(color: .black, size: self.size)
         blackout.zPosition = 5 // Ensure it's on top of everything
@@ -85,7 +113,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         blackout.position = CGPoint(x: 0, y: 0)
         blackoutNode = blackout
         cameraNode.addChild(blackout)
-        //>>>>>>> dev-valen
         
         // Maze
         mazeMap = MazeGenerator.generateMaze(pos: CGPoint(x: 0, y: 0))
@@ -162,7 +189,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             (0, -1, EnemyFacingDirection.right),
         ]
         let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
-        print("i: \(i), j: \(j)")
         
         var validOffsets: [(Int, Int, EnemyFacingDirection)] = []
         for offset in offsets {
@@ -208,12 +234,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
                 contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue)
 
         if playerAndGuideCollided {
-            print("Guide Triggered")
             loadGuide()
         }
         
         if playerAndEnemyCollided {
-            print("You died")
             playerDied()
         }
     }
@@ -311,7 +335,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
-        print(keysPressed)
         if event.keyCode == 0x31 {
             randomTeleportNearPlayer()
         }
@@ -338,7 +361,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             let squaredDistance = CGFloat(dx * dx + dy * dy)
             
             if squaredDistance <= enemyComponent.killDistance * enemyComponent.killDistance {
-                print("You Died Blinking")
                 playerDied()
                 return
             }
