@@ -14,7 +14,6 @@ class MenuScene: SKScene {
     var backgroundMusicPlayer: AVAudioPlayer?
 
     override func didMove(to view: SKView) {
-        
         // Setup and play background music with fade in
         setupBackgroundMusic()
         

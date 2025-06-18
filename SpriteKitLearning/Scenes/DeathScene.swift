@@ -83,9 +83,15 @@ class DeathScene: SKScene {
 //
 //=======
         
-        if let url = Bundle.main.url(forResource: "angelJumpscare", withExtension: "mp4") {
-            let player = AVPlayer(url: url)
-            let videoNode = SKVideoNode(avPlayer: player)
+        // Using NSDataAsset for video files in Assets catalog
+        if let videoAsset = NSDataAsset(name: "Jumpscare4K") {
+            // Write video data to temp file
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("Jumpscare4K.mp4")
+            
+            do {
+                try videoAsset.data.write(to: tempURL)
+                let player = AVPlayer(url: tempURL)
+                let videoNode = SKVideoNode(avPlayer: player)
             
             videoNode.position = CGPoint(x: size.width / 2, y: size.height / 2)
             videoNode.size = self.size
@@ -130,8 +136,11 @@ class DeathScene: SKScene {
             }
             
             run(SKAction.sequence([wait, showLabel]))
+            } catch {
+                print("⚠️ Error writing video data: \(error)")
+            }
         } else {
-            print("⚠️ jumpscare.mp4 not found in bundle!")
+            print("⚠️ Jumpscare4K video asset not found!")
         }
     }
     
