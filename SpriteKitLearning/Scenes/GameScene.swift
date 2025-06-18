@@ -405,13 +405,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private func setupBackgroundMusic() {
         let musicFileName = backgroundMusicFiles[currentMusicIndex]
         
-        guard let url = Bundle.main.url(forResource: musicFileName, withExtension: "mp3") else {
-            print("Could not find \(musicFileName).mp3 file")
+        // Using NSDataAsset for audio files in Assets catalog
+        guard let audioAsset = NSDataAsset(name: musicFileName) else {
+            print("Could not find \(musicFileName) asset")
             return
         }
         
         do {
-            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: url)
+            backgroundMusicPlayer = try AVAudioPlayer(data: audioAsset.data)
             backgroundMusicPlayer?.delegate = self
             backgroundMusicPlayer?.numberOfLoops = 0 // Play once, we'll handle the loop manually
             backgroundMusicPlayer?.volume = 0.0 // Start with volume 0 for fade in
@@ -434,13 +435,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     
     // MARK: - Heartbeat Audio Management
     private func setupHeartbeatAudio() {
-        guard let url = Bundle.main.url(forResource: "audio_bpm", withExtension: "mp3") else {
-            print("❌ Could not find audio_bpm.mp3 file")
+        // Using NSDataAsset for audio files in Assets catalog
+        guard let audioAsset = NSDataAsset(name: "audio_bpm") else {
+            print("❌ Could not find audio_bpm asset")
             return
         }
         
         do {
-            heartbeatAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            heartbeatAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
             heartbeatAudioPlayer?.numberOfLoops = -1 // Loop indefinitely
             heartbeatAudioPlayer?.volume = 1.0 // Full volume 100%
             heartbeatAudioPlayer?.enableRate = true // Enable rate control for tempo changes

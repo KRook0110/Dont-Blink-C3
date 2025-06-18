@@ -111,13 +111,14 @@ class MenuScene: SKScene {
     }
     
     func setupBackgroundMusic() {
-        guard let url = Bundle.main.url(forResource: "audio_menu", withExtension: "mp3") else {
-            print("Could not find audio_menu.mp3 file")
+        // Using NSDataAsset for audio files in Assets catalog
+        guard let audioAsset = NSDataAsset(name: "audio_menu") else {
+            print("Could not find audio_menu asset")
             return
         }
         
         do {
-            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: url)
+            backgroundMusicPlayer = try AVAudioPlayer(data: audioAsset.data)
             backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
             backgroundMusicPlayer?.volume = 0.0 // Start with volume 0 for fade in
             backgroundMusicPlayer?.play()

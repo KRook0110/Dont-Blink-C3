@@ -137,13 +137,14 @@ class DeathScene: SKScene {
     
     // MARK: - Audio Management
     private func playJumpscareAudio() {
-        guard let url = Bundle.main.url(forResource: "audio_jumpscare", withExtension: "mp3") else {
-            print("Could not find audio_jumpscare.mp3 file")
+        // Using NSDataAsset for audio files in Assets catalog
+        guard let audioAsset = NSDataAsset(name: "audio_jumpscare") else {
+            print("Could not find audio_jumpscare asset")
             return
         }
         
         do {
-            jumpscareAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            jumpscareAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
             jumpscareAudioPlayer?.volume = 0.5
             jumpscareAudioPlayer?.play()
         } catch {
@@ -157,13 +158,14 @@ class DeathScene: SKScene {
     }
     
     private func playDefeatAudio() {
-        guard let url = Bundle.main.url(forResource: "audio_defeat", withExtension: "mp3") else {
-            print("Could not find audio_defeat.mp3 file")
+        // Using NSDataAsset for audio files in Assets catalog
+        guard let audioAsset = NSDataAsset(name: "audio_defeat") else {
+            print("Could not find audio_defeat asset")
             return
         }
         
         do {
-            defeatAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            defeatAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
             defeatAudioPlayer?.volume = 0.0 // Start with 0 for fade in
             defeatAudioPlayer?.numberOfLoops = -1 // Loop defeat music
             defeatAudioPlayer?.play()
