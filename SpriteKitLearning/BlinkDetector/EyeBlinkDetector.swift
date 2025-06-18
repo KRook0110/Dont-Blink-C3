@@ -50,6 +50,8 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
                     self?.landmarks = []
                     self?.leftEyePoints = []
                     self?.rightEyePoints = []
+                    
+                    self?.isFaceDetected = false
                 }
                 return
             }
