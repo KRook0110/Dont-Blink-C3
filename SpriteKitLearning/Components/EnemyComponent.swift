@@ -10,7 +10,7 @@ enum EnemyFacingDirection {
 
 class EnemyCircle: GKComponent {
     let node: SKShapeNode
-    let killDistance = CGFloat(500)
+    let killDistance = CGFloat(1000)
     private let enemyLeftTexture: SKTexture
     private let enemyRightTexture: SKTexture
     private let enemyFrontTexture: SKTexture

@@ -43,10 +43,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var mousePosition: CGPoint? = nil
     private var allowMove = true
     private var mouseIsPressed = false
-    
+
     private var detectorCancellable: AnyCancellable?
     private var pauseOverlay: PauseOverlay?
-    
+
     private var blackoutNode: SKSpriteNode?
 
     var winningTileIndex: (row: Int, col: Int) = (9, 13)
@@ -81,7 +81,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         camera = cameraNode
         camera?.setScale(CGFloat(3.0))
         addChild(cameraNode)
-        
+
         // Pause Overlay
         pauseOverlay = PauseOverlay(size: self.size)
         if let overlay = pauseOverlay {
@@ -89,7 +89,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             overlay.isHidden = true // initially hidden
             cameraNode.addChild(overlay)
         }
-        
+
         // Game Pause
         detectorCancellable = detector.$isFaceDetected
             .receive(on: DispatchQueue.main)
@@ -99,13 +99,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
                 if !faceDetected {
                     self.isPaused = true
                     pauseOverlay?.isHidden = false
-                    
+
                 } else {
                     self.isPaused = false
                     pauseOverlay?.isHidden = true
                 }
             }
-        
+
         // Blink Animation
         let blackout = SKSpriteNode(color: .black, size: self.size)
         blackout.zPosition = 20000 // Ensure it's on top of everything
@@ -113,7 +113,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         blackout.position = CGPoint(x: 0, y: 0)
         blackoutNode = blackout
         cameraNode.addChild(blackout)
-        
+
         // Maze
         mazeMap = MazeGenerator.generateMaze(pos: CGPoint(x: 0, y: 0))
         addChild(mazeMap.node)
@@ -124,7 +124,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
 
         // Player
-        let spawnPoint = mazeMap.getTilePosFromIndex(row: 12, col: 14)
+        let spawnPoint = mazeMap.getTilePosFromIndex(row: 19, col: 14)
         playerComponent = PlayerComponent(
             size: playerSizes,
             pos: spawnPoint
@@ -189,7 +189,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             (0, -1, EnemyFacingDirection.right),
         ]
         let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
-        
+
         var validOffsets: [(Int, Int, EnemyFacingDirection)] = []
         for offset in offsets {
             if mazeMap.maze[offset.0 + i][offset.1 + j - 1] == 0 {
@@ -419,7 +419,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 
         let distance = hypot(playerPos.x - winPos.x, playerPos.y - winPos.y)
 
-        if distance < 30 {
+        if distance < 70 {
             self.playerComponent.node.physicsBody?.velocity = .zero
             self.playerComponent.moveWithoutCollision(mousePosition, duration: 5.0)
             self.shouldHandleBlink = false
