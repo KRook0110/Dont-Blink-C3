@@ -1,7 +1,7 @@
-import GameplayKit
-import SpriteKit
 import AVFoundation
 import Combine
+import GameplayKit
+import SpriteKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private let playerSizes = CGSize(width: 190, height: 190)
@@ -17,6 +17,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var enemyEntity: GKEntity?
     private var vignette: SKSpriteNode?
     private var shouldHandleBlink = true
+    private var wasdGuideComponent: MovementGuideComponent? = nil
 
     // Background Music Properties
     private var backgroundMusicPlayer: AVAudioPlayer?
@@ -26,9 +27,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     // Heartbeat Audio Properties
     private var heartbeatAudioPlayer: AVAudioPlayer?
     private var isHeartbeatPlaying = false
-    private let maxHeartbeatDistance: CGFloat = 550.0 // Maximum distance to hear heartbeat
-    private let minHeartbeatRate: Float = 1.0 // Slowest heartbeat rate
-    private let maxHeartbeatRate: Float = 3.0 // Fastest heartbeat rate
+    private var maxHeartbeatDistance: CGFloat = 550.0 // Maximum distance to hear heartbeat
+    private let minHeartbeatRate: Float = 2.0 // Slowest heartbeat rate
+    private let maxHeartbeatRate: Float = 5.0 // Fastest heartbeat rate
 
     private var lastBlinkCheckTime: TimeInterval = 0
     private let blinkInterval: TimeInterval = 0.1
@@ -54,6 +55,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     var winningTilePos: CGPoint {
         mazeMap.getTilePosFromIndex(row: winningTileIndex.row, col: winningTileIndex.col)
     }
+
     var gameIsEnding = false
     var isWinSequenceActive = false
     var isPLayerAutoMoving = false
@@ -83,7 +85,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         addChild(cameraNode)
 
         // Pause Overlay
-        pauseOverlay = PauseOverlay(size: self.size)
+        pauseOverlay = PauseOverlay(size: size)
         if let overlay = pauseOverlay {
             overlay.zPosition = 1000
             overlay.isHidden = true // initially hidden
@@ -107,9 +109,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             }
 
         // Blink Animation
-        let blackout = SKSpriteNode(color: .black, size: self.size)
+        let blackout = SKSpriteNode(color: .black, size: size)
         blackout.zPosition = 20000 // Ensure it's on top of everything
-        blackout.alpha = 0  // Start invisible
+        blackout.alpha = 0 // Start invisible
         blackout.position = CGPoint(x: 0, y: 0)
         blackoutNode = blackout
         cameraNode.addChild(blackout)
@@ -140,9 +142,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         guard let vignette else { return }
         vignette.zPosition = 1000
         vignette.name = "vignette"
-        vignette.size = CGSize(width: self.size.width + 100, height: self.size.height + 100)
+        vignette.size = CGSize(width: size.width + 100, height: size.height + 100)
         vignette.position = CGPoint(x: 0, y: 0)
         cameraNode.addChild(vignette)
+
+        wasdGuideComponent = MovementGuideComponent(
+            position: CGPoint(
+                x: 0,
+                y: -frame.height / 2 + 110
+            ))
+        if let wasdGuideComponent {
+            cameraNode.addChild(wasdGuideComponent.node)
+            wasdGuideComponent.loadGuide()
+        }
 
         // Background Music
         playBackgroundMusic()
@@ -162,7 +174,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         messageOverlay.position = CGPoint(x: 0, y: 0)
         allowMove = false
         messageOverlay.zPosition = 250
-        cameraNode .addChild(messageOverlay)
+        cameraNode.addChild(messageOverlay)
         Task {
             try await Task.sleep(nanoseconds: 1000 * 1000 * 1000 * 12)
             self.allowMove = true
@@ -173,6 +185,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     func teleportEnemy(_ pos: CGPoint) {
         if enemyComponent == nil {
             enemyComponent = EnemyCircle(size: playerSizes, pos: pos)
+            if let killDistance = enemyComponent?.killDistance {
+                maxHeartbeatDistance = killDistance
+            }
             addChild(enemyComponent!.node)
             enemyEntity = GKEntity()
             entities.append(enemyEntity!)
@@ -222,10 +237,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 //        || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
 //            && contact.bodyA.categoryBitMask == PhysicsCategory.wall.rawValue)
         let playerAndEnemyCollided =
-        (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
-         && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
-        || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
-            && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
+            (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
+                && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
+            || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
+                && contact.bodyA.categoryBitMask == PhysicsCategory.enemy.rawValue)
 
         let playerAndGuideCollided =
             (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue &&
@@ -244,8 +259,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 
     override func didChangeSize(_ oldSize: CGSize) {
         super.didChangeSize(oldSize)
-        blackoutNode?.size = self.size
-        vignette?.size = CGSize(width: self.size.width + 100, height: self.size.height + 100)
+        blackoutNode?.size = size
+        vignette?.size = CGSize(width: size.width + 100, height: size.height + 100)
     }
 
     private func playerDied() {
@@ -256,19 +271,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         stopHeartbeatAudio()
 
         if let view = view {
-            self.camera = nil
+            camera = nil
             cameraNode.removeFromParent()
 
             let deathScene = DeathScene(size: size)
             deathScene.scaleMode = .aspectFill
-            deathScene.detector = self.detector
-            self.cameraNode?.position = CGPoint(x: 0, y: 0)
+            deathScene.detector = detector
+            cameraNode?.position = CGPoint(x: 0, y: 0)
 
             // Scene Cleanup
-            self.removeAllActions()
-            self.removeAllChildren()
-            self.physicsWorld.speed = 0
-            self.isPaused = true
+            removeAllActions()
+            removeAllChildren()
+            physicsWorld.speed = 0
+            isPaused = true
             entities.removeAll()
 
             //            self.camera?.setScale(1.0)
@@ -277,9 +292,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
 
     func transitionToWinSceneWithCameraPan() {
-
-        let directionx = self.playerComponent.node.position.x
-        let directiony = self.playerComponent.node.position.y + 10
+        let directionx = playerComponent.node.position.x
+        let directiony = playerComponent.node.position.y + 10
 
         if isWinSequenceActive { return }
         isWinSequenceActive = true
@@ -302,7 +316,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             // Zoom in (smaller scale = zoom in)
             let zoomIn = SKAction.group([
                 SKAction.scaleX(to: 1.0, duration: 1.0),
-                SKAction.scaleY(to: 1.0, duration: 1.0)
+                SKAction.scaleY(to: 1.0, duration: 1.0),
             ])
             zoomIn.timingMode = .easeInEaseOut
 
@@ -310,15 +324,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             let panAndZoom = SKAction.sequence([
                 panUp,
                 SKAction.wait(forDuration: 0.2),
-                zoomIn
+                zoomIn,
             ])
 
             // Transition vignette when win
             if let vignette = self.vignette {
-                    let fadeOut = SKAction.fadeAlpha(to: 0.0, duration: 1.5)
-                    fadeOut.timingMode = .easeInEaseOut
-                    vignette.run(fadeOut)
-                }
+                let fadeOut = SKAction.fadeAlpha(to: 0.0, duration: 1.5)
+                fadeOut.timingMode = .easeInEaseOut
+                vignette.run(fadeOut)
+            }
 
             // Run camera pan and zoom
             camera.run(panAndZoom) {
@@ -328,17 +342,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             }
         }
 
-        self.run(SKAction.sequence([wait, startCameraPan]))
-        WinScene.playerNode = self.playerComponent.node.copy() as? SKNode
+        run(SKAction.sequence([wait, startCameraPan]))
+        WinScene.playerNode = playerComponent.node.copy() as? SKNode
     }
 
     var keysPressed = Set<UInt16>() // Use keyCodes (not characters)
 
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
-        if event.keyCode == 0x31 {
-            randomTeleportNearPlayer()
-        }
     }
 
     func handleBlink() {
@@ -420,9 +431,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         let distance = hypot(playerPos.x - winPos.x, playerPos.y - winPos.y)
 
         if distance < 70 {
-            self.playerComponent.node.physicsBody?.velocity = .zero
-            self.playerComponent.moveWithoutCollision(mousePosition, duration: 5.0)
-            self.shouldHandleBlink = false
+            playerComponent.node.physicsBody?.velocity = .zero
+            playerComponent.moveWithoutCollision(mousePosition, duration: 5.0)
+            shouldHandleBlink = false
             randomTeleportNearPlayer()
             transitionToWinSceneWithCameraPan()
         }
@@ -434,14 +445,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 
         lastUpdateTime = currentTime
     }
+
     func handleKeyboardMovement() {
         var dx = 0
         var dy = 0
+        var pressedKey = false
 
-        if keysPressed.contains(0x00) { dx -= 1 } // A
-        if keysPressed.contains(0x02) { dx += 1 } // D
-        if keysPressed.contains(0x0D) { dy += 1 } // W
-        if keysPressed.contains(0x01) { dy -= 1 } // S
+        if keysPressed.contains(0x00) {
+            dx -= 1
+            pressedKey = true
+        } // A
+        if keysPressed.contains(0x02) {
+            dx += 1
+            pressedKey = true
+        } // D
+        if keysPressed.contains(0x0D) {
+            dy += 1
+            pressedKey = true
+        } // W
+        if keysPressed.contains(0x01) {
+            dy -= 1
+            pressedKey = true
+        } // S
+        if pressedKey {
+            wasdGuideComponent?.unloadGuide()
+        }
 
         if allowMove {
             playerComponent.moveDirection(x: dx, y: dy)
@@ -454,7 +482,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
 
     private func selectRandomMusic() {
-        currentMusicIndex = Int.random(in: 0..<backgroundMusicFiles.count)
+        currentMusicIndex = Int.random(in: 0 ..< backgroundMusicFiles.count)
     }
 
     private func setupBackgroundMusic() {
@@ -480,8 +508,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
     }
 
-
-
     private func stopBackgroundMusic() {
         fadeOutAudio(player: backgroundMusicPlayer, duration: 1.0) {
             self.backgroundMusicPlayer = nil
@@ -489,6 +515,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
 
     // MARK: - Heartbeat Audio Management
+
     private func setupHeartbeatAudio() {
         // Using NSDataAsset for audio files in Assets catalog
         guard let audioAsset = NSDataAsset(name: "audio_bpm") else {
@@ -499,7 +526,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         do {
             heartbeatAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
             heartbeatAudioPlayer?.numberOfLoops = -1 // Loop indefinitely
-            heartbeatAudioPlayer?.volume = 1.0 // Full volume 100%
+            heartbeatAudioPlayer?.volume = 3.0 // Full volume 100%
             heartbeatAudioPlayer?.enableRate = true // Enable rate control for tempo changes
             heartbeatAudioPlayer?.rate = minHeartbeatRate // Start with slowest rate
             heartbeatAudioPlayer?.prepareToPlay() // Prepare audio for better performance
@@ -562,10 +589,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         heartbeatAudioPlayer?.stop()
     }
 
-
-
     // MARK: - AVAudioPlayerDelegate
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+
+    func audioPlayerDidFinishPlaying(_: AVAudioPlayer, successfully flag: Bool) {
         if flag {
             // Smooth transition to next random song
             fadeOutAudio(player: backgroundMusicPlayer, duration: 1.0) {

@@ -35,7 +35,7 @@ class GuideOverlay: SKNode {
         super.init()
         addChild(backgroundOverlay)
         addChild(backgroundBox)
-        
+
         // Load custom font
         loadCustomFont()
 
@@ -47,7 +47,7 @@ class GuideOverlay: SKNode {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     // MARK: - Font Loading
     private func loadCustomFont() {
         // Try to load font from Assets.xcassets
@@ -56,19 +56,19 @@ class GuideOverlay: SKNode {
             customFont = getSystemFontFallback()
             return
         }
-        
+
         guard let provider = CGDataProvider(data: fontAsset.data as CFData) else {
             print("❌ Failed to create CGDataProvider for font")
             customFont = getSystemFontFallback()
             return
         }
-        
+
         guard let cgFont = CGFont(provider) else {
             print("❌ Failed to create CGFont")
             customFont = getSystemFontFallback()
             return
         }
-        
+
         var error: Unmanaged<CFError>?
         if CTFontManagerRegisterGraphicsFont(cgFont, &error) {
             if let fontName = cgFont.postScriptName {
@@ -82,16 +82,16 @@ class GuideOverlay: SKNode {
             customFont = getSystemFontFallback()
         }
     }
-    
+
     private func getSystemFontFallback() -> String {
         // Return a system font that looks good for this purpose
         return "Menlo-Bold" // Monospace font that looks retro/gaming
     }
-    
+
     private func getFontName() -> String {
         return customFont ?? getSystemFontFallback()
     }
-    
+
     // MARK: - Debug Helper
     private func printAvailableFonts() {
         print("🔍 Available fonts:")

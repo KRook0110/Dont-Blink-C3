@@ -89,7 +89,7 @@ class DeathScene: SKScene {
 
         do {
             jumpscareAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
-            jumpscareAudioPlayer?.volume = 0.3
+            jumpscareAudioPlayer?.volume = 0.2
             jumpscareAudioPlayer?.play()
         } catch {
             print("Error playing jumpscare audio: \(error)")
