@@ -49,46 +49,7 @@ class GuideOverlay: SKNode {
     }
 
     private func loadCustomFont() {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fontURL = tempDir.appendingPathComponent("UpheavalTT.ttf")
-        let fontAlreadyExists = FileManager.default.fileExists(atPath: fontURL.path)
-
-        if !fontAlreadyExists {
-            guard let fontAsset = NSDataAsset(name: "UpheavalTT") else {
-                print("❌ Failed to load UpheavalTT font asset")
-                customFont = getSystemFontFallback()
-                return
-            }
-            do {
-                try fontAsset.data.write(to: fontURL)
-            } catch {
-                print("❌ Failed to write font data to temp file: \(error)")
-                customFont = getSystemFontFallback()
-                return
-            }
-        }
-
-        var error: Unmanaged<CFError>?
-        if !fontAlreadyExists {
-            if CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error) {
-            } else {
-                if let error = error?.takeUnretainedValue() {
-                    print("❌ Failed to register font: \(error)")
-                }
-            }
-        }
-
-        if let descriptors = CTFontManagerCreateFontDescriptorsFromURL(fontURL as CFURL) as? [CTFontDescriptor] {
-            for desc in descriptors {
-                if let fontName = CTFontDescriptorCopyAttribute(desc, kCTFontNameAttribute) as? String {
-                    customFont = fontName
-                    break
-                }
-            }
-        }
-        if customFont == nil {
-            customFont = getSystemFontFallback()
-        }
+        customFont = FontHelper.loadCustomFont(assetName: "UpheavalTT", tempFileName: "UpheavalTT.ttf")
     }
 
     private func getSystemFontFallback() -> String {
