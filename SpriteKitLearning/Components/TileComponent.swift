@@ -25,13 +25,13 @@ class TileComponent: GKComponent {
             self.node.fillColor = .white
             self.node.lineWidth = 0
         } else if pathNode == 1 {
-            let texture = SKTexture(imageNamed: "Finish")
+            let texture = SKTexture(imageNamed: "Tiles")
             self.node.fillTexture = texture
             self.node.fillColor = .white
             self.node.lineWidth = 0
         } else if pathNode == 2 {
             let pbody = SKPhysicsBody(rectangleOf: size)
-            let texture = SKTexture(imageNamed: "Finish")
+            let texture = SKTexture(imageNamed: "Tiles")
             self.node.fillTexture = texture
             self.node.fillColor = .white
             pbody.collisionBitMask = PhysicsCategory.all.rawValue
