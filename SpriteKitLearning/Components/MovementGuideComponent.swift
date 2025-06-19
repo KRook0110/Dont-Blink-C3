@@ -40,17 +40,16 @@ class MovementGuideComponent: GKComponent {
         node.alpha = 0
 
         guideLabel = SKLabelNode(text: "Use WASD to Move")
-        // guideLabel = SKLabelNode(fontNamed: customFont)
 
         super.init()
-        loadCustomFont()
+        // loadCustomFont()
+        guideLabel.fontName = "UpheavalTT-BRK-"
 
-        // guideLabel.text = "Use WASD to Move"
-        if let fontName = customFont {
-            guideLabel.fontName = fontName
-        } else {
-            guideLabel.fontName = getSystemFontFallback()
-        }
+        // if let fontName = customFont {
+        //     guideLabel.fontName = fontName
+        // } else {
+        //     guideLabel.fontName = getSystemFontFallback()
+        // }
         guideLabel.fontSize = 16
 
         let totalWidth = wasdGuideImage.size.width + guideLabel.frame.width + gap

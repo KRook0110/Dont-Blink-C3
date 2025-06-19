@@ -136,18 +136,9 @@ class DeathScene: SKScene {
 
     override func keyDown(with event: NSEvent) {
             switch event.keyCode {
-            case 48: // Tab key
+            case 48, 124,123, 0x02, 0x00: // Tab key, Right Arrow, D, A
                 selectedIndex = (selectedIndex + 1) % 2
                 updateSelection()
-
-            case 124: // Right Arrow
-                selectedIndex = (selectedIndex + 1) % 2
-                updateSelection()
-
-            case 123: // Left Arrow
-                selectedIndex = (selectedIndex - 1) % 2
-                updateSelection()
-
             case 36: // Return key
                 if selectedIndex == 0 {
                     // Stop all audio before transitioning
