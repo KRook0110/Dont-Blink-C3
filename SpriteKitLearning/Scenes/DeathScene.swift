@@ -1,5 +1,5 @@
-import SpriteKit
 import AVFoundation
+import SpriteKit
 
 class DeathScene: SKScene {
     var detector = EyeBlinkDetector()
@@ -8,13 +8,13 @@ class DeathScene: SKScene {
     private var jumpscareAudioPlayer: AVAudioPlayer?
     private var defeatAudioPlayer: AVAudioPlayer?
 
+    private var loadedMenu = false
     private var homeButton: SKSpriteNode!
     private var replayButton: SKSpriteNode!
     private var arrowNode: SKSpriteNode!
     private var selectedIndex = 0
 
-    override func didMove(to view: SKView) {
-
+    override func didMove(to _: SKView) {
         playJumpscareAudio()
         playDefeatAudio()
 
@@ -28,49 +28,49 @@ class DeathScene: SKScene {
                 let player = AVPlayer(url: tempURL)
                 let videoNode = SKVideoNode(avPlayer: player)
 
-            videoNode.position = CGPoint(x: size.width / 2, y: size.height / 2)
-            videoNode.size = self.size
-            videoNode.zPosition = 0
-            addChild(videoNode)
-            player.play()
+                videoNode.position = CGPoint(x: size.width / 2, y: size.height / 2)
+                videoNode.size = size
+                videoNode.zPosition = 0
+                addChild(videoNode)
+                player.play()
 
-            let wait = SKAction.wait(forDuration: 2)
-            let showLabel = SKAction.run {
-                self.fadeOutJumpscareAudio()
+                let wait = SKAction.wait(forDuration: 2)
+                let showLabel = SKAction.run {
+                    self.fadeOutJumpscareAudio()
 
-                self.camera?.setScale(1.0)
-                let blackBg = SKSpriteNode(imageNamed: "DefeatedPage")
-                blackBg.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
-                blackBg.zPosition = 5
-                blackBg.size = self.size
-                self.addChild(blackBg)
+                    self.camera?.setScale(1.0)
+                    let blackBg = SKSpriteNode(imageNamed: "DefeatedPage")
+                    blackBg.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
+                    blackBg.zPosition = 5
+                    blackBg.size = self.size
+                    self.addChild(blackBg)
 
+                    self.homeButton = SKSpriteNode(imageNamed: "homeButton")
+                    self.homeButton.name = "homeButton"
+                    self.homeButton.zPosition = 10
+                    self.homeButton.position = CGPoint(x: self.size.width * 0.27, y: self.size.height * 0.3)
+                    self.homeButton.size = CGSize(width: 80, height: 30)
+                    self.addChild(self.homeButton)
 
-                self.homeButton = SKSpriteNode(imageNamed: "homeButton")
-                self.homeButton.name = "homeButton"
-                self.homeButton.zPosition = 10
-                self.homeButton.position = CGPoint(x: self.size.width * 0.27, y: self.size.height * 0.3)
-                self.homeButton.size = CGSize(width: 80, height: 30)
-                self.addChild(self.homeButton)
+                    self.replayButton = SKSpriteNode(imageNamed: "replayButton")
+                    self.replayButton.name = "replayButton"
+                    self.replayButton.zPosition = 12
+                    self.replayButton.position = CGPoint(x: self.size.width * 0.75, y: self.size.height * 0.3)
+                    self.replayButton.size = CGSize(width: 95, height: 30)
+                    self.addChild(self.replayButton)
 
-                self.replayButton = SKSpriteNode(imageNamed: "replayButton")
-                self.replayButton.name = "replayButton"
-                self.replayButton.zPosition = 12
-                self.replayButton.position = CGPoint(x: self.size.width * 0.75, y: self.size.height * 0.3)
-                self.replayButton.size = CGSize(width: 95, height: 30)
-                self.addChild(self.replayButton)
+                    self.arrowNode = SKSpriteNode(imageNamed: "arrow")
+                    self.arrowNode.size = CGSize(width: 22, height: 30)
+                    self.arrowNode.zPosition = 10
+                    self.arrowNode.position = CGPoint(x: self.homeButton.position.x - 60, y: self.homeButton.position.y)
+                    self.arrowNode.name = "arrow"
+                    self.addChild(self.arrowNode)
+                    self.loadedMenu = true
 
-                self.arrowNode = SKSpriteNode(imageNamed: "arrow")
-                self.arrowNode.size = CGSize(width: 22, height: 30)
-                self.arrowNode.zPosition = 10
-                self.arrowNode.position = CGPoint(x: self.homeButton.position.x - 60, y: self.homeButton.position.y)
-                self.arrowNode.name = "arrow"
-                self.addChild(self.arrowNode)
+                    self.updateSelection()
+                }
 
-                self.updateSelection()
-            }
-
-            run(SKAction.sequence([wait, showLabel]))
+                run(SKAction.sequence([wait, showLabel]))
             } catch {
                 print("⚠️ Error writing video data: \(error)")
             }
@@ -80,6 +80,7 @@ class DeathScene: SKScene {
     }
 
     // MARK: - Audio Management
+
     private func playJumpscareAudio() {
         // Using NSDataAsset for audio files in Assets catalog
         guard let audioAsset = NSDataAsset(name: "audio_jumpscare") else {
@@ -97,8 +98,7 @@ class DeathScene: SKScene {
     }
 
     private func fadeOutJumpscareAudio() {
-        fadeOutAudio(player: jumpscareAudioPlayer, duration: 0.5) {
-        }
+        fadeOutAudio(player: jumpscareAudioPlayer, duration: 0.5) {}
     }
 
     private func playDefeatAudio() {
@@ -121,8 +121,6 @@ class DeathScene: SKScene {
         }
     }
 
-
-
     private func stopAllAudio() {
         // Stop jumpscare audio
         jumpscareAudioPlayer?.stop()
@@ -135,31 +133,34 @@ class DeathScene: SKScene {
     }
 
     override func keyDown(with event: NSEvent) {
-            switch event.keyCode {
-            case 48, 124,123, 0x02, 0x00: // Tab key, Right Arrow, D, A
-                selectedIndex = (selectedIndex + 1) % 2
-                updateSelection()
-            case 36: // Return key
-                if selectedIndex == 0 {
-                    // Stop all audio before transitioning
-                    stopAllAudio()
-                    let menuScene = MenuScene(size: self.size)
-                    menuScene.scaleMode = .aspectFill
-                    menuScene.detector = self.detector
-                    view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
-                } else {
-                    // Stop all audio before transitioning
-                    stopAllAudio()
-                    let gameScene = GameScene(size: self.size, detector: self.detector)
-                    gameScene.scaleMode = .aspectFill
-                    view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
-
-                }
-
-            default:
+        switch event.keyCode {
+        case 48, 124, 123, 0x02, 0x00: // Tab key, Right Arrow, D, A
+            if !loadedMenu {
                 break
             }
+            selectedIndex = (selectedIndex + 1) % 2
+            updateSelection()
+
+        case 36: // Return key
+            if selectedIndex == 0 {
+                // Stop all audio before transitioning
+                stopAllAudio()
+                let menuScene = MenuScene(size: size)
+                menuScene.scaleMode = .aspectFill
+                menuScene.detector = detector
+                view?.presentScene(menuScene, transition: SKTransition.fade(withDuration: 1.0))
+            } else {
+                // Stop all audio before transitioning
+                stopAllAudio()
+                let gameScene = GameScene(size: size, detector: detector)
+                gameScene.scaleMode = .aspectFill
+                view?.presentScene(gameScene, transition: SKTransition.fade(withDuration: 1.0))
+            }
+
+        default:
+            break
         }
+    }
 
 //    override func mouseDown(with event: NSEvent) {
 //        let location = event.location(in: self)
@@ -200,4 +201,3 @@ class DeathScene: SKScene {
         }
     }
 }
-

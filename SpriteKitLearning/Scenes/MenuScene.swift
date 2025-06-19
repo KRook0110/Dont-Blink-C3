@@ -11,6 +11,7 @@ class MenuScene: SKScene {
     var customFont: String = ""
     var unactiveColor: NSColor?
     var activeColor: NSColor?
+    var creditPopup: CreditsComponent?
     var selectArrow: SKSpriteNode?
     var quitPopup: QuitPopup?
 
@@ -38,10 +39,14 @@ class MenuScene: SKScene {
         background.alpha = 0.4 // for faded effect
         addChild(background)
 
-        titleLabel = SKSpriteNode(imageNamed: "DontBlink")
+        let titleTexture = SKTexture(imageNamed: "DontBlink")
+        titleTexture.filteringMode = .nearest
+        let titleHeightRatio = titleTexture.size().height / titleTexture.size().width
+        let titleWidth = CGFloat(380)
+        titleLabel = SKSpriteNode(texture: titleTexture)
         if let titleLabel {
-            titleLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
-            titleLabel.size = CGSize(width: 550, height: 200)
+            titleLabel.position = CGPoint(x: size.width / 2, y: size.height / 2 + 100)
+            titleLabel.size = CGSize(width: titleWidth, height: titleWidth * titleHeightRatio)
             addChild(titleLabel)
         }
         let texture = SKTexture(imageNamed: "Select")
@@ -52,7 +57,7 @@ class MenuScene: SKScene {
             selectArrow.size = CGSize(width: height * textureSize.width / textureSize.height, height: height)
         }
 
-        var yStartLabel = CGFloat(frame.height / 2 - 50)
+        var yStartLabel = CGFloat(frame.height / 2 - 90)
         startLabel = SKLabelNode(text: "Start")
         if let startLabel {
             startLabel.fontName = customFont
@@ -128,7 +133,14 @@ class MenuScene: SKScene {
                 addChild(quitPopup)
             }
         }
-        if let creditLabel, creditLabel == labels[selectedLabel] {}
+        if let creditLabel, creditLabel == labels[selectedLabel] {
+            creditPopup = CreditsComponent()
+            if let creditPopup {
+                creditPopup.zPosition = 1500
+                creditPopup.position = CGPoint(x: frame.width / 2, y: frame.height / 2)
+                addChild(creditPopup)
+            }
+        }
     }
 
     func setupBackgroundMusic() {
@@ -165,6 +177,10 @@ class MenuScene: SKScene {
     override func keyDown(with event: NSEvent) {
         if let quitPopup, quitPopup.parent == self {
             quitPopup.handleKeypress(keyCode: event.keyCode)
+            return
+        }
+        if let creditPopup, creditPopup.parent == self {
+            creditPopup.handleKeypress(keyCode: event.keyCode)
             return
         }
         switch event.keyCode {
