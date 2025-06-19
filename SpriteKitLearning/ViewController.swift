@@ -17,7 +17,7 @@ class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        menuScene = MenuScene(size: skView.bounds.size)
+        menuScene = MenuScene(size: skView.frame.size)
         menuScene?.scaleMode = .aspectFill
         menuScene?.detector = detector
 
@@ -25,7 +25,7 @@ class ViewController: NSViewController {
 //        deathScene.scaleMode = .aspectFill
 //        deathScene.detector = detector
 
-        
+
         skView.presentScene(menuScene)
         skView.ignoresSiblingOrder = true
         skView.showsFPS = true

@@ -50,6 +50,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 
     private var blackoutNode: SKSpriteNode?
 
+    var guideLoaded = false
+
     var winningTileIndex: (row: Int, col: Int) = (9, 13)
 
     var winningTilePos: CGPoint {
@@ -60,6 +62,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     var isWinSequenceActive = false
     var isPLayerAutoMoving = false
     var isCameraShouldFollowPlayer = false
+    private var messageOverlay: GuideOverlay? = nil
 
     private var lastDirectionKey: WalkDirection?
     var detector: EyeBlinkDetector
@@ -164,12 +167,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
 
     func loadGuide() {
-        let messageOverlay = GuideOverlay(
+        messageOverlay = GuideOverlay(
             size: CGSize(
                 width: size.width,
                 height: size.height
             )
         )
+        guard let messageOverlay else { return }
         // messageOverlay.position = CGPoint(x: frame.midX, y: frame.midY)
         messageOverlay.position = CGPoint(x: 0, y: 0)
         allowMove = false
@@ -179,6 +183,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             try await Task.sleep(nanoseconds: 1000 * 1000 * 1000 * 12)
             self.allowMove = true
             self.cameraNode?.removeChildren(in: [messageOverlay])
+            self.messageOverlay = nil
         }
     }
 
@@ -349,6 +354,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 
     override func keyDown(with event: NSEvent) {
         keysPressed.insert(event.keyCode)
+        switch event.keyCode {
+        case 0x24: // return or the enter key
+            if let messageOverlay {
+                allowMove = true
+                messageOverlay.skipGuide()
+            }
+        default:
+            break;
+        }
     }
 
     func handleBlink() {

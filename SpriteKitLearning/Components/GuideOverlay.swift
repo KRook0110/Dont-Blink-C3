@@ -1,6 +1,6 @@
-import SpriteKit
-import CoreText
 import AVFoundation
+import CoreText
+import SpriteKit
 
 class GuideOverlay: SKNode {
     private let backgroundOverlay: SKShapeNode
@@ -11,7 +11,7 @@ class GuideOverlay: SKNode {
     private let messages: [String] = [
         "THEY'RE WATCHING. WAITING. SILENT.",
         "THEY ONLY MOVE WHEN YOU BLINK.",
-        "CAN YOU FIND THE WAY OUT\nBEFORE THEY FIND YOU?"
+        "CAN YOU FIND THE WAY OUT\nBEFORE THEY FIND YOU?",
     ]
 
     private var currentMessageIndex = 0
@@ -22,19 +22,52 @@ class GuideOverlay: SKNode {
     private var customFont: String?
     private var talkAudioPlayer: AVAudioPlayer?
 
+    private var skipMessageNode: SKLabelNode?
+    private var underline: SKShapeNode?
+
     init(size: CGSize) {
         backgroundOverlay = SKShapeNode(rectOf: size)
+        backgroundBox = SKSpriteNode(imageNamed: "messageBox")
+        skipMessageNode = SKLabelNode(text: "Press Enter to Skip")
+        underline = nil
+        super.init()
+
         backgroundOverlay.fillColor = .black
         backgroundOverlay.strokeColor = .clear
         backgroundOverlay.alpha = 0.6
         backgroundOverlay.zPosition = 999
 
-        backgroundBox = SKSpriteNode(imageNamed: "messageBox")
         backgroundBox.size = CGSize(width: 600, height: 400)
         backgroundBox.zPosition = 1000
         backgroundBox.anchorPoint = CGPoint(x: 0.5, y: 0.5)
 
-        super.init()
+        skipMessageNode?.fontName = "UpheavalTT-BRK-"
+        skipMessageNode?.fontSize = 16
+        skipMessageNode?.fontColor = .white
+        skipMessageNode?.zPosition = 1200
+        if let skipMessageNode {
+            underline = SKShapeNode(rectOf: CGSize(
+                width: skipMessageNode.frame.width,
+                height: 2
+            ))
+            guard let underline else { return }
+            underline.position = CGPoint(
+                x: 0,
+                y: -skipMessageNode.frame.height + 3
+            )
+            underline.fillColor = .white
+            skipMessageNode.addChild(underline)
+        }
+
+        if let skipMessageNode {
+            skipMessageNode.position = CGPoint(
+                // x: backgroundBox.frame.width / 2 - skipMessageNode.frame.width / 2 - 120,
+                x: 0,
+                y: -backgroundBox.frame.height / 2 + skipMessageNode.frame.height / 2 + 85
+            )
+            backgroundBox.addChild(skipMessageNode)
+        }
+
         addChild(backgroundOverlay)
         addChild(backgroundBox)
 
@@ -42,11 +75,12 @@ class GuideOverlay: SKNode {
         loadCustomFont()
 
         run(.wait(forDuration: 0.2)) { [weak self] in
-                    self?.fadeInAndStartMessage()
-                }
+            self?.fadeInAndStartMessage()
+        }
     }
 
-    required init?(coder aDecoder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -63,11 +97,18 @@ class GuideOverlay: SKNode {
     }
 
     private func fadeInAndStartMessage() {
-            let fadeIn = SKAction.fadeIn(withDuration: 0.5)
-            self.backgroundBox.run(fadeIn) { [weak self] in
-                self?.showNextMessage()
-            }
+        let fadeIn = SKAction.fadeIn(withDuration: 0.5)
+        backgroundBox.run(fadeIn) { [weak self] in
+            self?.showNextMessage()
         }
+    }
+
+    func skipGuide() {
+        talkAudioPlayer?.stop()
+        clearPreviousLabels()
+        removeAllActions()
+        removeFromParent()
+    }
 
     private func showNextMessage() {
         guard currentMessageIndex < messages.count else {
@@ -92,7 +133,7 @@ class GuideOverlay: SKNode {
             label.fontColor = .white
             label.horizontalAlignmentMode = .center
             label.verticalAlignmentMode = .center
-            label.position = CGPoint(x: 0, y: totalHeight/2 - CGFloat(i) * spacing)
+            label.position = CGPoint(x: 0, y: totalHeight / 2 - CGFloat(i) * spacing)
             label.text = ""
             label.zPosition = 1001
             backgroundBox.addChild(label)
@@ -154,9 +195,9 @@ class GuideOverlay: SKNode {
         }
     }
 
-    private func fadeOutOverlay(){
+    private func fadeOutOverlay() {
         let fadeOut = SKAction.fadeOut(withDuration: 0.5)
-               backgroundBox.run(fadeOut)
+        backgroundBox.run(fadeOut)
         backgroundOverlay.removeFromParent()
     }
 
