@@ -1,8 +1,7 @@
 {
   "images" : [
     {
-      "compression-type" : "lossless",
-      "filename" : "DontBlink.png",
+      "filename" : "CreditText.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
