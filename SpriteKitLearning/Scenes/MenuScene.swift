@@ -12,6 +12,7 @@ class MenuScene: SKScene {
     var unactiveColor: NSColor?
     var activeColor: NSColor?
     var selectArrow: SKSpriteNode?
+    var quitPopup: QuitPopup?
 
     private let gap = CGFloat(20)
     private var labels: [SKLabelNode?] = []
@@ -43,6 +44,13 @@ class MenuScene: SKScene {
             titleLabel.size = CGSize(width: 550, height: 200)
             addChild(titleLabel)
         }
+        let texture = SKTexture(imageNamed: "Select")
+        selectArrow = SKSpriteNode(texture: texture)
+        if let selectArrow {
+            let height = CGFloat(20)
+            let textureSize = texture.size()
+            selectArrow.size = CGSize(width: height * textureSize.width / textureSize.height, height: height)
+        }
 
         var yStartLabel = CGFloat(frame.height / 2 - 50)
         startLabel = SKLabelNode(text: "Start")
@@ -54,6 +62,10 @@ class MenuScene: SKScene {
             addChild(startLabel)
             yStartLabel -= startLabel.frame.height + gap
             labels.append(startLabel)
+            if let selectArrow {
+                selectArrow.position = CGPoint(x: -startLabel.frame.width / 2 - 20, y: startLabel.frame.height / 2)
+                startLabel.addChild(selectArrow)
+            }
         }
 
         creditLabel = SKLabelNode(text: "credit")
@@ -96,17 +108,27 @@ class MenuScene: SKScene {
         labels[selectedLabel]?.fontColor = SKColor(cgColor: unactiveColor.cgColor)
         selectedLabel = newLabelIndex
         labels[selectedLabel]?.fontColor = SKColor(cgColor: activeColor.cgColor)
+        if let label = labels[newLabelIndex] {
+            selectArrow?.move(toParent: label)
+            selectArrow?.position = CGPoint(x: -label.frame.width / 2 - 20, y: label.frame.height / 2)
+        }
     }
+
     func triggerSelectedIndex() {
         if let startLabel, startLabel == labels[selectedLabel] {
             transitionToGameScene()
         }
         if let quitLabel, quitLabel == labels[selectedLabel] {
-            NSApplication.shared.terminate(nil)
-        }
-        if let creditLabel, creditLabel == labels[selectedLabel] {
+            // NSApplication.shared.terminate(nil)
 
+            quitPopup = QuitPopup()
+            if let quitPopup {
+                quitPopup.zPosition = 1500
+                quitPopup.position = CGPoint(x: frame.width / 2, y: frame.height / 2)
+                addChild(quitPopup)
+            }
         }
+        if let creditLabel, creditLabel == labels[selectedLabel] {}
     }
 
     func setupBackgroundMusic() {
@@ -141,10 +163,14 @@ class MenuScene: SKScene {
     }
 
     override func keyDown(with event: NSEvent) {
+        if let quitPopup, quitPopup.parent == self {
+            quitPopup.handleKeypress(keyCode: event.keyCode)
+            return
+        }
         switch event.keyCode {
-        case 	0x0D,0x7E:
+        case 0x0D, 0x7E:
             moveSelectedIndex(newLabelIndex: (selectedLabel - 1 + labels.count) % labels.count)
-        case 0x01, 	0x7D, 0x30:
+        case 0x01, 0x7D, 0x30:
             moveSelectedIndex(newLabelIndex: (selectedLabel + 1) % labels.count)
         case 36, 0x31: // 36 = Return/Enter key, 0x31 spaces
             triggerSelectedIndex()
