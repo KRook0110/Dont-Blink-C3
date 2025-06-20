@@ -46,14 +46,4 @@ class ViewController: NSViewController {
             }
         }
     }
-    
-    private func setupGame() {
-        let screenSize = skView.frame.size
-        
-        menuScene = MenuScene(size: screenSize)
-        menuScene?.scaleMode = .aspectFill
-        menuScene?.detector = detector
-
-        skView.presentScene(menuScene)
-    }
 }
