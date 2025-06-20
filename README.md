@@ -32,7 +32,7 @@ Don't Blink is an innovative horror game that combines traditional maze navigati
 
 ## 👥 Created By:
 
-**Techs:**
+**Developers:**
 - Ammar Sufyan
 - Hany Wijaya
 - Shawn Andrew
