@@ -21,16 +21,9 @@ class ViewController: NSViewController {
         menuScene?.scaleMode = .aspectFill
         menuScene?.detector = detector
 
-//        let deathScene = DeathScene(size: skView.bounds.size)
-//        deathScene.scaleMode = .aspectFill
-//        deathScene.detector = detector
-
-
         skView.presentScene(menuScene)
         skView.ignoresSiblingOrder = true
-        skView.showsFPS = false
-        skView.showsNodeCount = false
-        skView.preferredFramesPerSecond = 120
+        skView.preferredFramesPerSecond = 60
     }
 
 }
