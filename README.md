@@ -1,12 +1,8 @@
 # Don't Blink 
 
-A thrilling horror maze game for macOS that uses real-time eye-blink detection to control gameplay mechanics. Navigate through a mysterious maze while an ominous entity stalks you - but whatever you do, **don't blink**.
+Don't Blink is an innovative horror game that combines traditional maze navigation with cutting-edge computer vision technology. Using your device's camera, the game tracks your eye movements and responds to your blinks, creating a unique and immersive gaming experience.
 
 ![256x256](https://github.com/user-attachments/assets/a68d2e37-7333-4cd9-b4b3-9458d6c8cfd0)
-
-## 🎮 Game Overview
-
-Don't Blink is an innovative horror game that combines traditional maze navigation with cutting-edge computer vision technology. Using your device's camera, the game tracks your eye movements and responds to your blinks, creating a unique and immersive gaming experience.
 
 ## ✨ Features
 
