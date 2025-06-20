@@ -2,7 +2,7 @@
 
 A thrilling horror maze game for macOS that uses real-time eye-blink detection to control gameplay mechanics. Navigate through a mysterious maze while an ominous entity stalks you - but whatever you do, **don't blink**.
 
-![Game Logo](Assets.xcassets/DontBlink.imageset/DontBlink.png)
+![256x256](https://github.com/user-attachments/assets/a68d2e37-7333-4cd9-b4b3-9458d6c8cfd0)
 
 ## 🎮 Game Overview
 
