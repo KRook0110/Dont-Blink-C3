@@ -2,20 +2,20 @@ import SpriteKit
 import AVFoundation
 
 class WinScene: SKScene {
-    
+
     static var playerNode: SKNode?
-    
+
     private var selectorNode: SKSpriteNode!
     private var selectionIndex: Int = 0 // 0 = Home, 1 = Replay
     private var homeButton: SKSpriteNode!
     private var replayButton: SKSpriteNode!
-    
+
     // Audio Properties
     private var winAudioPlayer: AVAudioPlayer?
 
     override func didMove(to view: SKView) {
-        self.backgroundColor = .white
-        
+        self.backgroundColor = .black
+
         // Play win audio
         playWinAudio()
 
@@ -31,8 +31,12 @@ class WinScene: SKScene {
         imageNode.setScale(0.5)
         self.addChild(imageNode)
 
-        let winLabel = SKSpriteNode(imageNamed: "YOU WIN")
+        let winTexture = SKTexture(imageNamed: "YOU WIN")
+        let winHeightRatio = winTexture.size().height / winTexture.size().width
+        let winWidth = CGFloat(880)
+        let winLabel = SKSpriteNode(texture: winTexture)
         winLabel.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2 + 90)
+        winLabel.size = CGSize(width:winWidth, height: winWidth * winHeightRatio)
         winLabel.setScale(0.5)
         self.addChild(winLabel)
 
@@ -46,7 +50,7 @@ class WinScene: SKScene {
         replayButton.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2 - 50)
         replayButton.setScale(0.5)
         self.addChild(replayButton)
-        
+
         selectorNode = SKSpriteNode(imageNamed: "Select")
         selectorNode.setScale(0.5)
         selectorNode.zPosition = 1
@@ -64,7 +68,7 @@ class WinScene: SKScene {
         updateSelectorPosition()
 
     }
-    
+
     // MARK: - Audio Management
     private func playWinAudio() {
         // Using NSDataAsset for audio files in Assets catalog
@@ -72,57 +76,57 @@ class WinScene: SKScene {
             print("Could not find audio_win asset")
             return
         }
-        
+
         do {
             winAudioPlayer = try AVAudioPlayer(data: audioAsset.data)
             winAudioPlayer?.numberOfLoops = -1 // Loop indefinitely
             winAudioPlayer?.volume = 0.0 // Start with volume 0 for fade in
             winAudioPlayer?.play()
-            
+
             // Fade in effect
             fadeInAudio(player: winAudioPlayer, targetVolume: 0.6, duration: 2.0)
         } catch {
             print("Error playing win audio: \(error)")
         }
     }
-    
+
     private func stopWinAudio() {
         fadeOutAudio(player: winAudioPlayer, duration: 1.0) {
             self.winAudioPlayer = nil
         }
     }
-    
+
     // MARK: - Audio Helper Functions
     private func fadeInAudio(player: AVAudioPlayer?, targetVolume: Float, duration: TimeInterval) {
         guard let player = player else { return }
-        
+
         player.volume = 0.0
         let fadeSteps = 20
         let stepDuration = duration / Double(fadeSteps)
         let volumeStep = targetVolume / Float(fadeSteps)
-        
+
         for i in 1...fadeSteps {
             DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
                 player.volume = volumeStep * Float(i)
             }
         }
     }
-    
+
     private func fadeOutAudio(player: AVAudioPlayer?, duration: TimeInterval, completion: @escaping () -> Void) {
         guard let player = player else {
             completion()
             return
         }
-        
+
         let initialVolume = player.volume
         let fadeSteps = 20
         let stepDuration = duration / Double(fadeSteps)
         let volumeStep = initialVolume / Float(fadeSteps)
-        
+
         for i in 1...fadeSteps {
             DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
                 player.volume = initialVolume - (volumeStep * Float(i))
-                
+
                 if i == fadeSteps {
                     player.stop()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -144,11 +148,8 @@ class WinScene: SKScene {
 
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
-        case 0x7E: // Up Arrow
-            selectionIndex = max(0, selectionIndex - 1)
-            updateSelectorPosition()
-        case 0x7D: // Down Arrow
-            selectionIndex = min(1, selectionIndex + 1)
+        case 0x7E, 0x0D, 0x7D, 0x01, 48: // Up Arrow
+            selectionIndex =  (selectionIndex + 1) % 2
             updateSelectorPosition()
         case 0x24, 0x4C: // Return / Enter
             handleSelection()
@@ -165,7 +166,7 @@ class WinScene: SKScene {
     private func handleSelection() {
         // Stop win audio before transitioning
         stopWinAudio()
-        
+
         if selectionIndex == 0 {
             // Home selected
             let homeScene = MenuScene(size: self.size)

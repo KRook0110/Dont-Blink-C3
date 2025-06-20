@@ -45,7 +45,7 @@ class MenuScene: SKScene {
         let titleWidth = CGFloat(380)
         titleLabel = SKSpriteNode(texture: titleTexture)
         if let titleLabel {
-            titleLabel.position = CGPoint(x: size.width / 2, y: size.height / 2 + 100)
+            titleLabel.position = CGPoint(x: size.width / 2, y: size.height / 2 + 120)
             titleLabel.size = CGSize(width: titleWidth, height: titleWidth * titleHeightRatio)
             addChild(titleLabel)
         }
