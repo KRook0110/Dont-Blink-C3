@@ -30,7 +30,7 @@ Don't Blink is an innovative horror game that combines traditional maze navigati
 - **Framework**: SpriteKit, GamePlayKit, Vision, AVFoundation
 - **Platform**: macOS
 
-## 👥 Created By:
+## 👥 Created By
 
 **Developers:**
 - Ammar Sufyan
