@@ -30,6 +30,18 @@ Don't Blink is an innovative horror game that combines traditional maze navigati
 - **Framework**: SpriteKit, GamePlayKit, Vision, AVFoundation
 - **Platform**: macOS
 
+## Created By:
+
+**Techs:**
+- ammar sufyan
+- hany wijaya
+- shawn andrew
+- valencia sutanto
+
+**Designers:**
+- aissya jelitawati
+- flavia witarsah
+
 ---
 
 **Warning**: This game contains horror elements and may not be suitable for all players. Player discretion is advised.
