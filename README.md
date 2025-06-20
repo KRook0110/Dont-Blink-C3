@@ -22,7 +22,6 @@ Don't Blink is an innovative horror game that combines traditional maze navigati
 - **WASD Keys**: Move your character through the maze
 - **Return/Enter**: Select menu options
 - **Up/Down Arrows**: Navigate menu items
-- **ESC**: Access pause menu (during gameplay)
 
 ## 🛠️ Technical Stack
 
