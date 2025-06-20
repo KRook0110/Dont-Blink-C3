@@ -18,8 +18,6 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     @Published var faceBoundingBox: CGRect = .zero
     @Published var faceCount: Int = 0
     @Published var selectedFaceArea: CGFloat = 0.0
-    
-    // Buat pause
     @Published var isFaceDetected: Bool = true
     
     override init() {
@@ -64,7 +62,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
             // Filter wajah yang terlalu kecil (threshold minimum area 0.01)
             let validFaces = results.filter { face in
                 let area = face.boundingBox.width * face.boundingBox.height
-                return area > 0.01  // Hanya proses wajah dengan area > 1% dari frame
+                return area > 0.01
             }
             
             guard !validFaces.isEmpty else {
@@ -129,7 +127,6 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     }
 
     private func convert(_ point: CGPoint, boundingBox: CGRect) -> CGPoint {
-        // Convert from face bounding box to image coordinates (normalized 0-1)
         let x = boundingBox.origin.x + point.x * boundingBox.size.width
         let y = boundingBox.origin.y + point.y * boundingBox.size.height
         return CGPoint(x: x, y: y)
