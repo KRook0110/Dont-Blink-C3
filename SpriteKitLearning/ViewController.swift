@@ -28,8 +28,8 @@ class ViewController: NSViewController {
 
         skView.presentScene(menuScene)
         skView.ignoresSiblingOrder = true
-        skView.showsFPS = true
-        skView.showsNodeCount = true
+        skView.showsFPS = false
+        skView.showsNodeCount = false
         skView.preferredFramesPerSecond = 120
     }
 
