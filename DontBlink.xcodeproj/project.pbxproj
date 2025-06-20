@@ -7,13 +7,26 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		BB3DD7722DF670BD0088B889 /* SpriteKitLearning.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpriteKitLearning.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB3DD7722DF670BD0088B889 /* DontBlink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DontBlink.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "DontBlink" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BB3DD7712DF670BD0088B889 /* DontBlink */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		BB3DD7742DF670BD0088B889 /* SpriteKitLearning */ = {
+		BB3DD7742DF670BD0088B889 /* DontBlink */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SpriteKitLearning;
+			exceptions = (
+				85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "DontBlink" target */,
+			);
+			path = DontBlink;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +45,7 @@
 		BB3DD7692DF670BD0088B889 = {
 			isa = PBXGroup;
 			children = (
-				BB3DD7742DF670BD0088B889 /* SpriteKitLearning */,
+				BB3DD7742DF670BD0088B889 /* DontBlink */,
 				BB3DD7732DF670BD0088B889 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +53,7 @@
 		BB3DD7732DF670BD0088B889 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB3DD7722DF670BD0088B889 /* SpriteKitLearning.app */,
+				BB3DD7722DF670BD0088B889 /* DontBlink.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BB3DD7712DF670BD0088B889 /* SpriteKitLearning */ = {
+		BB3DD7712DF670BD0088B889 /* DontBlink */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "SpriteKitLearning" */;
+			buildConfigurationList = BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "DontBlink" */;
 			buildPhases = (
 				BB3DD76E2DF670BD0088B889 /* Sources */,
 				BB3DD76F2DF670BD0088B889 /* Frameworks */,
@@ -61,13 +74,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				BB3DD7742DF670BD0088B889 /* SpriteKitLearning */,
+				BB3DD7742DF670BD0088B889 /* DontBlink */,
 			);
-			name = SpriteKitLearning;
+			name = DontBlink;
 			packageProductDependencies = (
 			);
 			productName = SpriteKitLearning;
-			productReference = BB3DD7722DF670BD0088B889 /* SpriteKitLearning.app */;
+			productReference = BB3DD7722DF670BD0088B889 /* DontBlink.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "SpriteKitLearning" */;
+			buildConfigurationList = BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "DontBlink" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BB3DD7712DF670BD0088B889 /* SpriteKitLearning */,
+				BB3DD7712DF670BD0088B889 /* DontBlink */,
 			);
 		};
 /* End PBXProject section */
@@ -251,13 +264,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = SpriteKitLearning/SpriteKitLearning.entitlements;
+				CODE_SIGN_ENTITLEMENTS = DontBlink/DontBlink.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X7HM5SFDUV;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DontBlink/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Please turn on the camera to detect your blinks.";
@@ -272,6 +288,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ammarsufyan.dontblink;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -284,13 +301,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = SpriteKitLearning/SpriteKitLearning.entitlements;
+				CODE_SIGN_ENTITLEMENTS = DontBlink/DontBlink.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X7HM5SFDUV;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DontBlink/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Please turn on the camera to detect your blinks.";
@@ -305,6 +325,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ammarsufyan.dontblink;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -314,7 +335,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "SpriteKitLearning" */ = {
+		BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "DontBlink" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB3DD7852DF670BE0088B889 /* Debug */,
@@ -323,7 +344,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "SpriteKitLearning" */ = {
+		BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "DontBlink" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB3DD7882DF670BE0088B889 /* Debug */,
