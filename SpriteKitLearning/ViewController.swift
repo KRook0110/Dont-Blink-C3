@@ -17,13 +17,43 @@ class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        menuScene = MenuScene(size: skView.frame.size)
+        skView.ignoresSiblingOrder = true
+        skView.preferredFramesPerSecond = 60
+        
+        enterFullScreenMode()
+    }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        
+        let screenSize = skView.frame.size
+        
+        menuScene = MenuScene(size: screenSize)
         menuScene?.scaleMode = .aspectFill
         menuScene?.detector = detector
 
         skView.presentScene(menuScene)
-        skView.ignoresSiblingOrder = true
-        skView.preferredFramesPerSecond = 60
     }
+    
+    private func enterFullScreenMode() {
+        if let window = view.window {
+            if !window.styleMask.contains(.fullScreen) {
+                window.toggleFullScreen(nil)
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.enterFullScreenMode()
+            }
+        }
+    }
+    
+    private func setupGame() {
+        let screenSize = skView.frame.size
+        
+        menuScene = MenuScene(size: screenSize)
+        menuScene?.scaleMode = .aspectFill
+        menuScene?.detector = detector
 
+        skView.presentScene(menuScene)
+    }
 }
