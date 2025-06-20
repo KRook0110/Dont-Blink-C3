@@ -9,14 +9,16 @@ enum WalkDirection: Int, CaseIterable {
 class PlayerComponent: GKComponent {
     let node: SKSpriteNode
     let moveAcceleration = CGFloat(800)
+    let maxSpeed: CGFloat = 800.0
+    let sqrt2 = CGFloat(1.41421356237)
+    let directionChangeDelay: TimeInterval = 0.1
+    
     var walkFrames: [WalkDirection: [SKTexture]] = [:]
     var direction: WalkDirection
     var currentAnimationDirection: WalkDirection?
-    let maxSpeed: CGFloat = 800.0
     var size: CGSize
     var isAnimating = false
     var lastDirectionChangeTime: TimeInterval = 0
-    let directionChangeDelay: TimeInterval = 0.1 // Minimum time between direction changes
 
     init(size: CGSize, pos: CGPoint) {
         self.size = size
