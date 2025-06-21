@@ -7,7 +7,6 @@ struct FontHelper {
         let tempDir = FileManager.default.temporaryDirectory
         let fontURL = tempDir.appendingPathComponent(tempFileName)
 
-        // Tulis file font ke temp jika belum ada
         if !FileManager.default.fileExists(atPath: fontURL.path) {
             if let fontAsset = NSDataAsset(name: assetName) {
                 do {
@@ -18,11 +17,9 @@ struct FontHelper {
             }
         }
 
-        // Selalu register font setiap app start
         var error: Unmanaged<CFError>?
         _ = CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error)
 
-        // Ambil nama font dari file
         if let descriptors = CTFontManagerCreateFontDescriptorsFromURL(fontURL as CFURL) as? [CTFontDescriptor] {
             for desc in descriptors {
                 if let fontName = CTFontDescriptorCopyAttribute(desc, kCTFontNameAttribute) as? String {

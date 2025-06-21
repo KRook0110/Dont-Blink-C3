@@ -1,4 +1,3 @@
-
 struct PhysicsCategory: OptionSet {
     let rawValue: UInt32
 

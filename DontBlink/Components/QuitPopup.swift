@@ -60,7 +60,6 @@ class QuitPopup: SKNode {
         background.addChild(stayLabel)
         background.addChild(leaveLabel)
         addChild(background)
-        print(customFont)
 
         selectArrow.position = CGPoint(
             x: -stayLabel.frame.width / 2 - 20,
