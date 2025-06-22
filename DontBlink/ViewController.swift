@@ -18,7 +18,7 @@ class ViewController: NSViewController {
         super.viewDidLoad()
 
         skView.ignoresSiblingOrder = true
-        skView.preferredFramesPerSecond = 60
+        skView.preferredFramesPerSecond = 120
         
         enterFullScreenMode()
     }
