@@ -193,11 +193,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             if let killDistance = enemyComponent?.killDistance {
                 maxHeartbeatDistance = killDistance
             }
-            addChild(enemyComponent!.node)
+            if let enemyComponent = enemyComponent {
+                addChild(enemyComponent.node)
+            }
             enemyEntity = GKEntity()
-            entities.append(enemyEntity!)
+            if let enemyEntity = enemyEntity {
+                entities.append(enemyEntity)
+            }
         } else {
-            enemyComponent!.node.position = pos
+            enemyComponent?.node.position = pos
         }
     }
 
@@ -206,7 +210,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             (0, 1, EnemyFacingDirection.left),
             (1, 0, EnemyFacingDirection.back),
             (-1, 0, EnemyFacingDirection.front),
-            (0, -1, EnemyFacingDirection.right),
+            (0, -1, EnemyFacingDirection.right)
         ]
         let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
 
@@ -235,11 +239,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     }
 
     func didBegin(_ contact: SKPhysicsContact) {
-//        let playerAndWallCollided =
-//        (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
-//         && contact.bodyB.categoryBitMask == PhysicsCategory.wall.rawValue)
-//        || (contact.bodyB.categoryBitMask == PhysicsCategory.player.rawValue
-//            && contact.bodyA.categoryBitMask == PhysicsCategory.wall.rawValue)
         let playerAndEnemyCollided =
             (contact.bodyA.categoryBitMask == PhysicsCategory.player.rawValue
                 && contact.bodyB.categoryBitMask == PhysicsCategory.enemy.rawValue)
@@ -320,7 +319,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             // Zoom in (smaller scale = zoom in)
             let zoomIn = SKAction.group([
                 SKAction.scaleX(to: 1.0, duration: 1.0),
-                SKAction.scaleY(to: 1.0, duration: 1.0),
+                SKAction.scaleY(to: 1.0, duration: 1.0)
             ])
             zoomIn.timingMode = .easeInEaseOut
 
@@ -328,7 +327,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             let panAndZoom = SKAction.sequence([
                 panUp,
                 SKAction.wait(forDuration: 0.2),
-                zoomIn,
+                zoomIn
             ])
 
             // Transition vignette when win
@@ -361,7 +360,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
                 messageOverlay.skipGuide()
             }
         default:
-            break;
+            break
         }
     }
 
@@ -379,10 +378,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         lastBlinkTime = currentTime
 
         if let enemyComponent {
-            let player_pos = playerComponent.node.position
-            let enemy_pos = enemyComponent.node.position
-            let dx = player_pos.x - enemy_pos.x
-            let dy = player_pos.y - enemy_pos.y
+            let playerPos = playerComponent.node.position
+            let enemyPos = enemyComponent.node.position
+            let dx = playerPos.x - enemyPos.x
+            let dy = playerPos.y - enemyPos.y
             let squaredDistance = CGFloat(dx * dx + dy * dy)
 
             if squaredDistance <= enemyComponent.killDistance * enemyComponent.killDistance {

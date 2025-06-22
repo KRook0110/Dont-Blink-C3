@@ -11,7 +11,7 @@ class GuideOverlay: SKNode {
     private let messages: [String] = [
         "THEY'RE WATCHING. WAITING. SILENT.",
         "THEY ONLY MOVE WHEN YOU BLINK.",
-        "CAN YOU FIND THE WAY OUT\nBEFORE THEY FIND YOU?",
+        "CAN YOU FIND THE WAY OUT\nBEFORE THEY FIND YOU?"
     ]
 
     private var currentMessageIndex = 0

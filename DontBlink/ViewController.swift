@@ -1,10 +1,3 @@
-//
-//  ViewController.swift
-//  SpriteKitLearning
-//
-//  Created by Shawn Andrew on 09/06/25.
-//
-
 import GameplayKit
 import SpriteKit
 
@@ -18,7 +11,6 @@ class ViewController: NSViewController {
         super.viewDidLoad()
 
         skView.ignoresSiblingOrder = true
-        skView.preferredFramesPerSecond = 120
         
         enterFullScreenMode()
     }

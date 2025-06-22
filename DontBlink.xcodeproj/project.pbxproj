@@ -68,6 +68,7 @@
 				BB3DD76E2DF670BD0088B889 /* Sources */,
 				BB3DD76F2DF670BD0088B889 /* Frameworks */,
 				BB3DD7702DF670BD0088B889 /* Resources */,
+				852E90932E07EFA700F3EBE4 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -107,6 +108,9 @@
 			);
 			mainGroup = BB3DD7692DF670BD0088B889;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				852E90922E07EF9300F3EBE4 /* XCRemoteSwiftPackageReference "SwiftLint" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB3DD7732DF670BD0088B889 /* Products */;
 			projectDirPath = "";
@@ -126,6 +130,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		852E90932E07EFA700F3EBE4 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]; then\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif which swiftlint > /dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint t installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BB3DD76E2DF670BD0088B889 /* Sources */ = {
@@ -272,6 +298,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X7HM5SFDUV;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DontBlink/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink";
@@ -309,6 +336,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X7HM5SFDUV;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DontBlink/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink";
@@ -354,6 +382,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		852E90922E07EF9300F3EBE4 /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/SwiftLint";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.59.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = BB3DD76A2DF670BD0088B889 /* Project object */;
 }

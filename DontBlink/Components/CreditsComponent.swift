@@ -1,4 +1,3 @@
-
 import GameplayKit
 import SpriteKit
 
@@ -36,12 +35,11 @@ class CreditsComponent: SKNode {
         creditImage.size = CGSize(width: rectSize.width, height: rectSize.width * creditHeightRatio)
         creditImage.position = CGPoint(
             x: 0,
-            y:  -creditImage.size.height / 2 - rectSize.height / 2 - 20
-            // y:  0
+            y: -creditImage.size.height / 2 - rectSize.height / 2 - 20
         )
 
         // cropnode
-        let maskShape = SKShapeNode(rectOf:rectSize)
+        let maskShape = SKShapeNode(rectOf: rectSize)
         maskShape.fillColor = .white
         cropNode.maskNode = maskShape
         cropNode.zPosition = 100
@@ -50,7 +48,6 @@ class CreditsComponent: SKNode {
             y: 2)
         cropNode.addChild(creditImage)
 
-
         // addchild
         addChild(background)
         addChild(cropNode)
@@ -58,7 +55,6 @@ class CreditsComponent: SKNode {
         let moveUp = SKAction.moveBy(x: 0, y: 50, duration: 1)
         let moveForever = SKAction.repeatForever(moveUp)
         creditImage.run(moveForever)
-
     }
     func handleKeypress(keyCode: UInt16) {
         if keyCode == 0x24 {

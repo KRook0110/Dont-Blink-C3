@@ -26,7 +26,6 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     }
 
     private func setupCamera() {
-        session.sessionPreset = .medium
         guard let device = AVCaptureDevice.default(for: .video),
               let input = try? AVCaptureDeviceInput(device: device) else { return }
         session.addInput(input)

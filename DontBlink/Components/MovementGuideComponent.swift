@@ -16,7 +16,7 @@ class MovementGuideComponent: GKComponent {
         SKTexture(imageNamed: "WASDMovmentGuideFrame6"),
         SKTexture(imageNamed: "WASDMovmentGuideFrame7"),
         SKTexture(imageNamed: "WASDMovmentGuideFrame8"),
-        SKTexture(imageNamed: "WASDMovmentGuideFrame9"),
+        SKTexture(imageNamed: "WASDMovmentGuideFrame9")
     ]
 
     init(position: CGPoint) {

@@ -36,7 +36,7 @@ class WinScene: SKScene {
         let winWidth = CGFloat(880)
         let winLabel = SKSpriteNode(texture: winTexture)
         winLabel.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2 + 90)
-        winLabel.size = CGSize(width:winWidth, height: winWidth * winHeightRatio)
+        winLabel.size = CGSize(width: winWidth, height: winWidth * winHeightRatio)
         winLabel.setScale(0.5)
         self.addChild(winLabel)
 

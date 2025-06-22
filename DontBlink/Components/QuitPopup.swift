@@ -78,12 +78,11 @@ class QuitPopup: SKNode {
             if selectArrow.parent == stayLabel {
                 self.removeAllActions()
                 self.removeFromParent()
-            }
-            else {
+            } else {
                 NSApplication.shared.terminate(nil)
             }
         default:
-            break;
+            break
         }
     }
 
