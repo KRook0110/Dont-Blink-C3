@@ -1,6 +1,6 @@
 import SpriteKit
 
-class PauseOverlay: SKNode {
+internal class PauseOverlay: SKNode {
     private let backgroundOverlay: SKShapeNode
     private let pauseMessage: SKSpriteNode
     

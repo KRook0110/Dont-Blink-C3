@@ -1,7 +1,7 @@
 import AVFoundation
 import SpriteKit
 
-class DeathScene: SKScene {
+internal class DeathScene: SKScene {
     var detector = EyeBlinkDetector()
     var videoNode: SKVideoNode?
 

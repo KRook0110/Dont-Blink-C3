@@ -1,7 +1,7 @@
 import GameplayKit
 import SpriteKit
 
-class MovementGuideComponent: GKComponent {
+internal class MovementGuideComponent: GKComponent {
     let node: SKNode
     let gap = CGFloat(20)
     private let wasdGuideImage: SKSpriteNode

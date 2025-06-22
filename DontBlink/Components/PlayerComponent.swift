@@ -3,10 +3,10 @@ import GameplayKit
 import QuartzCore
 
 enum WalkDirection: Int, CaseIterable {
-    case up = 1, left, down, right
+    case upward = 1, left, down, right
 }
 
-class PlayerComponent: GKComponent {
+internal class PlayerComponent: GKComponent {
     let node: SKSpriteNode
     let moveAcceleration = CGFloat(800)
     let maxSpeed: CGFloat = 800.0
@@ -69,7 +69,7 @@ class PlayerComponent: GKComponent {
 
         // Map directions to the ranges of frame indices
         let directionRanges: [WalkDirection: ClosedRange<Int>] = [
-            .up: 0...8,
+            .upward: 0...8,
             .left: 9...17,
             .down: 18...26,
             .right: 27...35
@@ -77,8 +77,8 @@ class PlayerComponent: GKComponent {
 
         for (direction, range) in directionRanges {
             var textureFrames: [SKTexture] = []
-            for i in range {
-                let textureName = "walk\(i)"
+            for frameIndex in range {
+                let textureName = "walk\(frameIndex)"
                 let texture = SKTexture(imageNamed: textureName)
 
                 // Check if texture loaded successfully (not empty)
@@ -101,7 +101,7 @@ class PlayerComponent: GKComponent {
 
         // Map directions to the ranges of frame indices
         let directionRanges: [WalkDirection: ClosedRange<Int>] = [
-            .up: 0...8,
+            .upward: 0...8,
             .left: 9...17,
             .down: 18...26,
             .right: 27...35
@@ -109,8 +109,8 @@ class PlayerComponent: GKComponent {
 
         for (direction, range) in directionRanges {
             var textureFrames: [SKTexture] = []
-            for i in range {
-                let textureName = "walk\(i)"
+            for frameIndex in range {
+                let textureName = "walk\(frameIndex)"
                 textureFrames.append(atlas.textureNamed(textureName))
             }
             frames[direction] = textureFrames
@@ -179,25 +179,25 @@ class PlayerComponent: GKComponent {
         }
     }
 
-    func resolveDirection(dx: CGFloat, dy: CGFloat) -> WalkDirection {
+    func resolveDirection(deltaX: CGFloat, deltaY: CGFloat) -> WalkDirection {
         // Add threshold to prevent micro-movements from changing direction
         let threshold: CGFloat = 0.3
 
-        if abs(dx) > abs(dy) + threshold {
-            return dx > 0 ? .right : .left
-        } else if abs(dy) > abs(dx) + threshold {
-            return dy > 0 ? .up : .down
+        if abs(deltaX) > abs(deltaY) + threshold {
+            return deltaX > 0 ? .right : .left
+        } else if abs(deltaY) > abs(deltaX) + threshold {
+            return deltaY > 0 ? .upward : .down
         } else {
             // For diagonal movement, prioritize current direction if close
-            if abs(dx - dy) < threshold {
+            if abs(deltaX - deltaY) < threshold {
                 // If truly diagonal, choose based on which is stronger
-                if abs(dx) > abs(dy) {
-                    return dx > 0 ? .right : .left
+                if abs(deltaX) > abs(deltaY) {
+                    return deltaX > 0 ? .right : .left
                 } else {
-                    return dy > 0 ? .up : .down
+                    return deltaY > 0 ? .upward : .down
                 }
             } else {
-                return abs(dx) > abs(dy) ? (dx > 0 ? .right : .left) : (dy > 0 ? .up : .down)
+                return abs(deltaX) > abs(deltaY) ? (deltaX > 0 ? .right : .left) : (deltaY > 0 ? .upward : .down)
             }
         }
     }
@@ -207,21 +207,21 @@ class PlayerComponent: GKComponent {
             return
         }
 
-        let dx = position.x - node.position.x
-        let dy = position.y - node.position.y
-        let distance = sqrt(dx * dx + dy * dy)
+        let deltaX = position.x - node.position.x
+        let deltaY = position.y - node.position.y
+        let distance = sqrt(deltaX * deltaX + deltaY * deltaY)
 
         // Always animate based on direction, regardless of actual movement
-        let direction = resolveDirection(dx: dx, dy: dy)
+        let direction = resolveDirection(deltaX: deltaX, deltaY: deltaY)
         animate(direction: direction)
 
         // If destination is close, don't move but keep animating
         if distance < 5 {
             body.velocity = .zero
         } else {
-            let vx = dx / distance * maxSpeed
-            let vy = dy / distance * maxSpeed
-            body.velocity = CGVector(dx: vx, dy: vy)
+            let velocityX = deltaX / distance * maxSpeed
+            let velocityY = deltaY / distance * maxSpeed
+            body.velocity = CGVector(dx: velocityX, dy: velocityY)
         }
     }
 
@@ -242,33 +242,33 @@ class PlayerComponent: GKComponent {
 
         // Max velocity in points per second
         // Clamp each axis separately still needs fixing for diagonal movement
-        var dx = body.velocity.dx
-        var dy = body.velocity.dy
-        dx = max(min(dx, maxSpeed), -maxSpeed)
-        dy = max(min(dy, maxSpeed), -maxSpeed)
-        let direction = resolveDirection(dx: dx, dy: dy)
+        var deltaX = body.velocity.dx
+        var deltaY = body.velocity.dy
+        deltaX = max(min(deltaX, maxSpeed), -maxSpeed)
+        deltaY = max(min(deltaY, maxSpeed), -maxSpeed)
+        let direction = resolveDirection(deltaX: deltaX, deltaY: deltaY)
         self.direction = direction
-        body.velocity = CGVector(dx: dx, dy: dy)
+        body.velocity = CGVector(dx: deltaX, dy: deltaY)
     }
 
-    func moveDirection(x: Int, y: Int) {
+    func moveDirection(xDirection: Int, yDirection: Int) {
         guard let body = self.node.physicsBody else { return }
 
-        if x == 0 && y == 0 {
+        if xDirection == 0 && yDirection == 0 {
             stopAnimation()
             return
         }
 
-        let fx = CGFloat(x) * moveAcceleration
-        let fy = CGFloat(y) * moveAcceleration
-        var force = CGVector(dx: fx, dy: fy)
-        if x != 0 && y != 0 {
+        let forceX = CGFloat(xDirection) * moveAcceleration
+        let forceY = CGFloat(yDirection) * moveAcceleration
+        var force = CGVector(dx: forceX, dy: forceY)
+        if xDirection != 0 && yDirection != 0 {
             force.dx /= sqrt2
             force.dy /= sqrt2
         }
         body.applyForce(force)
 
-        let newDirection = resolveDirection(dx: CGFloat(x), dy: CGFloat(y))
+        let newDirection = resolveDirection(deltaX: CGFloat(xDirection), deltaY: CGFloat(yDirection))
 
         // Smooth direction changes with debouncing
         let currentTime = CACurrentMediaTime()

@@ -13,9 +13,9 @@ func fadeInAudio(player: AVAudioPlayer?, targetVolume: Float, duration: TimeInte
     let stepDuration = duration / Double(steps)
     let volumeStep = targetVolume / Float(steps)
     
-    for i in 0...steps {
-        DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-            player.volume = volumeStep * Float(i)
+    for stepIndex in 0...steps {
+        DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(stepIndex)) {
+            player.volume = volumeStep * Float(stepIndex)
         }
     }
 }
@@ -36,11 +36,11 @@ func fadeOutAudio(player: AVAudioPlayer?, duration: TimeInterval, completion: @e
     let currentVolume = player.volume
     let volumeStep = currentVolume / Float(steps)
     
-    for i in 0...steps {
-        DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-            player.volume = currentVolume - (volumeStep * Float(i))
+    for stepIndex in 0...steps {
+        DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(stepIndex)) {
+            player.volume = currentVolume - (volumeStep * Float(stepIndex))
             
-            if i == steps {
+            if stepIndex == steps {
                 player.stop()
                 completion()
             }

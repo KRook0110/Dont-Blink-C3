@@ -1,7 +1,7 @@
 import GameplayKit
 import SpriteKit
 
-class CreditsComponent: SKNode {
+internal class CreditsComponent: SKNode {
     private let background: SKSpriteNode
     private let backgroundWidth = CGFloat(600)
     private let cropNode: SKCropNode

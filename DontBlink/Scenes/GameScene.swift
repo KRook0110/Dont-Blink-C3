@@ -3,7 +3,7 @@ import Combine
 import GameplayKit
 import SpriteKit
 
-class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
+internal class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private let playerSizes = CGSize(width: 190, height: 190)
 
     var entities = [GKEntity]()
@@ -17,7 +17,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var enemyEntity: GKEntity?
     private var vignette: SKSpriteNode?
     private var shouldHandleBlink = true
-    private var wasdGuideComponent: MovementGuideComponent? = nil
+    private var wasdGuideComponent: MovementGuideComponent?
 
     // Background Music Properties
     private var backgroundMusicPlayer: AVAudioPlayer?
@@ -41,7 +41,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     private var lastUpdateTime: TimeInterval = 0
     private var label: SKLabelNode?
     private var spinnyNode: SKShapeNode?
-    private var mousePosition: CGPoint? = nil
+    private var mousePosition: CGPoint?
     private var allowMove = true
     private var mouseIsPressed = false
 
@@ -62,7 +62,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     var isWinSequenceActive = false
     var isPLayerAutoMoving = false
     var isCameraShouldFollowPlayer = false
-    private var messageOverlay: GuideOverlay? = nil
+    private var messageOverlay: GuideOverlay?
 
     private var lastDirectionKey: WalkDirection?
     var detector: EyeBlinkDetector
@@ -212,21 +212,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             (-1, 0, EnemyFacingDirection.front),
             (0, -1, EnemyFacingDirection.right)
         ]
-        let (i, j) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
+        let (playerRow, playerCol) = mazeMap.getTileIndexFromPos(playerComponent.node.position)
 
         var validOffsets: [(Int, Int, EnemyFacingDirection)] = []
-        for offset in offsets {
-            if mazeMap.maze[offset.0 + i][offset.1 + j - 1] == 0 {
-                validOffsets.append(offset)
-            }
+        for offset in offsets where mazeMap.maze[offset.0 + playerRow][offset.1 + playerCol - 1] == 0 {
+            validOffsets.append(offset)
         }
 
         guard validOffsets.count != 0 else { return }
 
         let chosenOffset = Int.random(in: 0 ..< validOffsets.count)
         let position = mazeMap.getTilePosFromIndex(
-            row: i + validOffsets[chosenOffset].0,
-            col: j + validOffsets[chosenOffset].1
+            row: playerRow + validOffsets[chosenOffset].0,
+            col: playerCol + validOffsets[chosenOffset].1
         )
         teleportEnemy(position)
         enemyComponent?.faceDirection(side: validOffsets[chosenOffset].2)
@@ -380,9 +378,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         if let enemyComponent {
             let playerPos = playerComponent.node.position
             let enemyPos = enemyComponent.node.position
-            let dx = playerPos.x - enemyPos.x
-            let dy = playerPos.y - enemyPos.y
-            let squaredDistance = CGFloat(dx * dx + dy * dy)
+            let deltaX = playerPos.x - enemyPos.x
+            let deltaY = playerPos.y - enemyPos.y
+            let squaredDistance = CGFloat(deltaX * deltaX + deltaY * deltaY)
 
             if squaredDistance <= enemyComponent.killDistance * enemyComponent.killDistance {
                 playerDied()
@@ -420,7 +418,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
 
         // Calculate time since last update
-        let dt = currentTime - lastUpdateTime
+        let deltaTime = currentTime - lastUpdateTime
 
         if !isWinSequenceActive || isCameraShouldFollowPlayer {
             cameraNode.position = playerComponent.node.position
@@ -452,31 +450,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
 
         // Update entities
         for entity in entities {
-            entity.update(deltaTime: dt)
+            entity.update(deltaTime: deltaTime)
         }
 
         lastUpdateTime = currentTime
     }
 
     func handleKeyboardMovement() {
-        var dx = 0
-        var dy = 0
+        var xDirection = 0
+        var yDirection = 0
         var pressedKey = false
 
         if keysPressed.contains(0x00) {
-            dx -= 1
+            xDirection -= 1
             pressedKey = true
         } // A
         if keysPressed.contains(0x02) {
-            dx += 1
+            xDirection += 1
             pressedKey = true
         } // D
         if keysPressed.contains(0x0D) {
-            dy += 1
+            yDirection += 1
             pressedKey = true
         } // W
         if keysPressed.contains(0x01) {
-            dy -= 1
+            yDirection -= 1
             pressedKey = true
         } // S
         if pressedKey {
@@ -484,7 +482,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
 
         if allowMove {
-            playerComponent.moveDirection(x: dx, y: dy)
+            playerComponent.moveDirection(xDirection: xDirection, yDirection: yDirection)
         }
     }
 
@@ -561,9 +559,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         }
 
         // Calculate distance between player and enemy
-        let dx = playerPos.x - enemyPos.x
-        let dy = playerPos.y - enemyPos.y
-        let distance = sqrt(dx * dx + dy * dy)
+        let deltaX = playerPos.x - enemyPos.x
+        let deltaY = playerPos.y - enemyPos.y
+        let distance = sqrt(deltaX * deltaX + deltaY * deltaY)
 
         if distance <= maxHeartbeatDistance {
             // Enemy is close enough to trigger heartbeat

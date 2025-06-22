@@ -1,7 +1,7 @@
 import AVFoundation
 import SpriteKit
 
-class MenuScene: SKScene {
+internal class MenuScene: SKScene {
     var detector: EyeBlinkDetector = .init()
     var backgroundMusicPlayer: AVAudioPlayer?
     var titleLabel: SKSpriteNode?

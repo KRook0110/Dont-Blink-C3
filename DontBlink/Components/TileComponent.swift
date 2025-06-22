@@ -12,7 +12,7 @@ enum PathNode: Int {
     case safeTile = 7
 }
 
-class TileComponent: GKComponent {
+internal class TileComponent: GKComponent {
     let node: SKShapeNode
 
     init(pos: CGPoint, size: CGSize, pathNode: Int) {

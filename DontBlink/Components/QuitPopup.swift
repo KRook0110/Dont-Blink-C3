@@ -1,7 +1,7 @@
 import GameKit
 import SpriteKit
 
-class QuitPopup: SKNode {
+internal class QuitPopup: SKNode {
     private let background: SKSpriteNode
     private let backgroundWidth = CGFloat(380)
     private let promptText: SKLabelNode

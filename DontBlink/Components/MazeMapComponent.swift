@@ -1,7 +1,7 @@
 import SpriteKit
 import GameplayKit
 
-class MazeMapComponent: GKComponent {
+internal class MazeMapComponent: GKComponent {
     let node: SKShapeNode
 
     let maze: [[Int]]
@@ -34,14 +34,14 @@ class MazeMapComponent: GKComponent {
         // self.node.fillColor = .white
         self.node.position = pos
 
-        for i in 0..<maze.count {
+        for rowIndex in 0..<maze.count {
             var buffer: [TileComponent] = []
-            for j in 0..<maze[0].count {
+            for colIndex in 0..<maze[0].count {
                 let tile = TileComponent(
                     pos: CGPoint(
-                        x: CGFloat(j) * tileWidth - xOffset, y: CGFloat(-i) * tileHeight + yOffset),
+                        x: CGFloat(colIndex) * tileWidth - xOffset, y: CGFloat(-rowIndex) * tileHeight + yOffset),
                     size: CGSize(width: tileWidth, height: tileHeight),
-                    pathNode: maze[i][j]
+                    pathNode: maze[rowIndex][colIndex]
                 )
                 buffer.append(tile)
                 self.node.addChild(tile.node)
@@ -69,10 +69,10 @@ class MazeMapComponent: GKComponent {
         return res
     }
 
-    func getTilePosFromIndex(row i: Int, col j: Int) -> CGPoint {
+    func getTilePosFromIndex(row rowIndex: Int, col colIndex: Int) -> CGPoint {
         let res = CGPoint(
-            x: topLeftPos.x + CGFloat(j) * tileWidth - tileWidth / 2,
-            y: topLeftPos.y - CGFloat(i) * tileHeight - tileHeight / 2
+            x: topLeftPos.x + CGFloat(colIndex) * tileWidth - tileWidth / 2,
+            y: topLeftPos.y - CGFloat(rowIndex) * tileHeight - tileHeight / 2
         )
         return res
     }

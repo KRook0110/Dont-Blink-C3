@@ -3,7 +3,7 @@ import AVFoundation
 import Vision
 import SwiftUI
 
-class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+internal class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     private let session = AVCaptureSession()
     private let videoOutput = AVCaptureVideoDataOutput()
     private let sequenceHandler = VNSequenceRequestHandler()
@@ -38,7 +38,7 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-        let request = VNDetectFaceLandmarksRequest { [weak self] request, error in
+        let request = VNDetectFaceLandmarksRequest { [weak self] request, _ in
             guard let results = request.results as? [VNFaceObservation], !results.isEmpty else {
                 // Reset jika tidak ada wajah yang terdeteksi
                 DispatchQueue.main.async {
@@ -126,15 +126,15 @@ class EyeBlinkDetector: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
     }
 
     private func convert(_ point: CGPoint, boundingBox: CGRect) -> CGPoint {
-        let x = boundingBox.origin.x + point.x * boundingBox.size.width
-        let y = boundingBox.origin.y + point.y * boundingBox.size.height
-        return CGPoint(x: x, y: y)
+        let convertedX = boundingBox.origin.x + point.x * boundingBox.size.width
+        let convertedY = boundingBox.origin.y + point.y * boundingBox.size.height
+        return CGPoint(x: convertedX, y: convertedY)
     }
 
     private func calculateEAR(points: [CGPoint]) -> CGFloat {
         guard points.count >= 6 else { return 1.0 }
-        func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
-            hypot(a.x - b.x, a.y - b.y)
+        func distance(_ pointA: CGPoint, _ pointB: CGPoint) -> CGFloat {
+            hypot(pointA.x - pointB.x, pointA.y - pointB.y)
         }
         let vertical1 = distance(points[1], points[5])
         let vertical2 = distance(points[2], points[4])

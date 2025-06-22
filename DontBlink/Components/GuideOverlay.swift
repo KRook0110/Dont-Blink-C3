@@ -2,7 +2,7 @@ import AVFoundation
 import CoreText
 import SpriteKit
 
-class GuideOverlay: SKNode {
+internal class GuideOverlay: SKNode {
     private let backgroundOverlay: SKShapeNode
     private let backgroundBox: SKSpriteNode
 
@@ -126,14 +126,14 @@ class GuideOverlay: SKNode {
         // Create empty labels for each line, stacked vertically
         let spacing: CGFloat = 30
         let totalHeight = spacing * CGFloat(fullLines.count - 1)
-        for (i, _) in fullLines.enumerated() {
+        for lineIndex in fullLines.indices {
             let fontName = getFontName()
             let label = SKLabelNode(fontNamed: fontName)
             label.fontSize = 20
             label.fontColor = .white
             label.horizontalAlignmentMode = .center
             label.verticalAlignmentMode = .center
-            label.position = CGPoint(x: 0, y: totalHeight / 2 - CGFloat(i) * spacing)
+            label.position = CGPoint(x: 0, y: totalHeight / 2 - CGFloat(lineIndex) * spacing)
             label.text = ""
             label.zPosition = 1001
             backgroundBox.addChild(label)

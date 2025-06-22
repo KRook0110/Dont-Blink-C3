@@ -1,11 +1,11 @@
 import GameplayKit
 import SpriteKit
 
-class ViewController: NSViewController {
+internal class ViewController: NSViewController {
     private let detector = EyeBlinkDetector()
     @IBOutlet var skView: SKView!
-    var menuScene: MenuScene? = nil
-    var deathScene: DeathScene? = nil
+    var menuScene: MenuScene?
+    var deathScene: DeathScene?
 
     override func viewDidLoad() {
         super.viewDidLoad()

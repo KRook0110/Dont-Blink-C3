@@ -1,7 +1,7 @@
 import SpriteKit
 import AVFoundation
 
-class WinScene: SKScene {
+internal class WinScene: SKScene {
 
     static var playerNode: SKNode?
 
@@ -93,47 +93,6 @@ class WinScene: SKScene {
     private func stopWinAudio() {
         fadeOutAudio(player: winAudioPlayer, duration: 1.0) {
             self.winAudioPlayer = nil
-        }
-    }
-
-    // MARK: - Audio Helper Functions
-    private func fadeInAudio(player: AVAudioPlayer?, targetVolume: Float, duration: TimeInterval) {
-        guard let player = player else { return }
-
-        player.volume = 0.0
-        let fadeSteps = 20
-        let stepDuration = duration / Double(fadeSteps)
-        let volumeStep = targetVolume / Float(fadeSteps)
-
-        for i in 1...fadeSteps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = volumeStep * Float(i)
-            }
-        }
-    }
-
-    private func fadeOutAudio(player: AVAudioPlayer?, duration: TimeInterval, completion: @escaping () -> Void) {
-        guard let player = player else {
-            completion()
-            return
-        }
-
-        let initialVolume = player.volume
-        let fadeSteps = 20
-        let stepDuration = duration / Double(fadeSteps)
-        let volumeStep = initialVolume / Float(fadeSteps)
-
-        for i in 1...fadeSteps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(i)) {
-                player.volume = initialVolume - (volumeStep * Float(i))
-
-                if i == fadeSteps {
-                    player.stop()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        completion()
-                    }
-                }
-            }
         }
     }
 

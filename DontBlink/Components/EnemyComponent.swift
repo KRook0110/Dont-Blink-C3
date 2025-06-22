@@ -8,7 +8,7 @@ enum EnemyFacingDirection {
     case back
 }
 
-class EnemyCircle: GKComponent {
+internal class EnemyCircle: GKComponent {
     let node: SKShapeNode
     let killDistance = CGFloat(1000)
     private let enemyLeftTexture: SKTexture

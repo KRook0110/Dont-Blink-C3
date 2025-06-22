@@ -1,7 +1,7 @@
 import GameKit
 import SpriteKit
 
-class MazeGenerator {
+internal class MazeGenerator {
     static func generateMaze(pos: CGPoint) -> MazeMapComponent {
         let maze = [
             
