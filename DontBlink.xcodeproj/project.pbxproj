@@ -303,7 +303,7 @@
 				INFOPLIST_FILE = DontBlink/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Please turn on the camera to detect your blinks.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses your camera to detect eye movement and blinks.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -341,7 +341,7 @@
 				INFOPLIST_FILE = DontBlink/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Please turn on the camera to detect your blinks.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses your camera to detect eye movement and blinks.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
