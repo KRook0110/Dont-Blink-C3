@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		BB3DD7722DF670BD0088B889 /* DontBlink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DontBlink.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB3DD7722DF670BD0088B889 /* Don't Blink - Maze Escape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Don't Blink - Maze Escape.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "DontBlink" target */ = {
+		85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "Don't Blink - Maze Escape" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = BB3DD7712DF670BD0088B889 /* DontBlink */;
+			target = BB3DD7712DF670BD0088B889 /* Don't Blink - Maze Escape */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -24,7 +24,7 @@
 		BB3DD7742DF670BD0088B889 /* DontBlink */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "DontBlink" target */,
+				85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "Don't Blink - Maze Escape" target */,
 			);
 			path = DontBlink;
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		BB3DD7732DF670BD0088B889 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB3DD7722DF670BD0088B889 /* DontBlink.app */,
+				BB3DD7722DF670BD0088B889 /* Don't Blink - Maze Escape.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BB3DD7712DF670BD0088B889 /* DontBlink */ = {
+		BB3DD7712DF670BD0088B889 /* Don't Blink - Maze Escape */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "DontBlink" */;
+			buildConfigurationList = BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "Don't Blink - Maze Escape" */;
 			buildPhases = (
 				BB3DD76E2DF670BD0088B889 /* Sources */,
 				BB3DD76F2DF670BD0088B889 /* Frameworks */,
@@ -77,11 +77,11 @@
 			fileSystemSynchronizedGroups = (
 				BB3DD7742DF670BD0088B889 /* DontBlink */,
 			);
-			name = DontBlink;
+			name = "Don't Blink - Maze Escape";
 			packageProductDependencies = (
 			);
 			productName = SpriteKitLearning;
-			productReference = BB3DD7722DF670BD0088B889 /* DontBlink.app */;
+			productReference = BB3DD7722DF670BD0088B889 /* Don't Blink - Maze Escape.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -99,7 +99,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "DontBlink" */;
+			buildConfigurationList = BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "Don't Blink - Maze Escape" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -116,7 +116,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BB3DD7712DF670BD0088B889 /* DontBlink */,
+				BB3DD7712DF670BD0088B889 /* Don't Blink - Maze Escape */,
 			);
 		};
 /* End PBXProject section */
@@ -363,7 +363,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "DontBlink" */ = {
+		BB3DD76D2DF670BD0088B889 /* Build configuration list for PBXProject "Don't Blink - Maze Escape" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB3DD7852DF670BE0088B889 /* Debug */,
@@ -372,7 +372,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "DontBlink" */ = {
+		BB3DD7872DF670BE0088B889 /* Build configuration list for PBXNativeTarget "Don't Blink - Maze Escape" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB3DD7882DF670BE0088B889 /* Debug */,
