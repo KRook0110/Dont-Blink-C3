@@ -12,7 +12,10 @@ internal class ViewController: NSViewController {
 
         skView.ignoresSiblingOrder = true
         
-        enterFullScreenMode()
+        // Give user a moment to see the window, then enter full screen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.enterFullScreenMode()
+        }
     }
     
     override func viewDidAppear() {

@@ -10,22 +10,9 @@
 		BB3DD7722DF670BD0088B889 /* Don't Blink - Maze Escape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Don't Blink - Maze Escape.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "Don't Blink - Maze Escape" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = BB3DD7712DF670BD0088B889 /* Don't Blink - Maze Escape */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BB3DD7742DF670BD0088B889 /* DontBlink */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				85C9AC742E05EB6400709CAA /* Exceptions for "DontBlink" folder in "Don't Blink - Maze Escape" target */,
-			);
 			path = DontBlink;
 			sourceTree = "<group>";
 		};
@@ -300,7 +287,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DontBlink/Info.plist;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink - Maze Escape";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses your camera to detect eye movement and blinks.";
@@ -338,7 +325,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = DontBlink/Info.plist;
+				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_CFBundleDisplayName = "Don't Blink - Maze Escape";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses your camera to detect eye movement and blinks.";
